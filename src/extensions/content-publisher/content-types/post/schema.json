@@ -20,16 +20,16 @@
   },
   "attributes": {
     "mediumLink": {
-      "type": "text"
+      "type": "string"
+    },
+    "devToLink": {
+      "type": "string"
     },
     "blog": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::blog.blog",
       "inversedBy": "post"
-    },
-    "devToLink": {
-      "type": "string"
     }
   }
 }
