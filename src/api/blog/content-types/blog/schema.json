@@ -27,6 +27,12 @@
     },
     "banner": {
       "type": "string"
+    },
+    "post": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::content-publisher.post",
+      "mappedBy": "blog"
     }
   }
 }
