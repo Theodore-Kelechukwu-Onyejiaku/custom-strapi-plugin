@@ -1,8 +1,23 @@
 import type { Core } from '@strapi/strapi';
 
 const service = ({ strapi }: { strapi: Core.Strapi }) => ({
-  getWelcomeMessage() {
-    return 'Welcome to Strapi 🚀';
+  /**
+   * GET Posts with Pagination
+   */
+  async getPosts() {
+    try {
+      const posts = await strapi.documents('plugin::content-publisher.post').findMany({
+        populate: {
+          blog: {
+            populate: ['tags'],
+          },
+        },
+      });
+
+      return posts;
+    } catch (error) {
+      throw error;
+    }
   },
 });
 

@@ -1,4 +1,6 @@
 import { Main, Box, Typography } from '@strapi/design-system';
+// import { PublishingTable } from 'src/components/PublishingTable';
+import PublishingTable from '../components/PublishingTable';
 
 const HomePage = () => {
   return (
@@ -9,6 +11,7 @@ const HomePage = () => {
           <Typography variant="epsilon">Publish blog posts to medium, dev.to, etc.</Typography>
         </Box>
       </Box>
+      <PublishingTable />
     </Main>
   );
 };

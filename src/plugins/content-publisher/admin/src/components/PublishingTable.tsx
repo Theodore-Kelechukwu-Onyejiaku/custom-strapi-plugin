@@ -7,113 +7,38 @@ import {
   Th,
   Typography,
   Box,
-  PageLink,
-  Pagination,
-  PreviousLink,
-  NextLink,
   Link,
   Flex,
-  IconButton,
-  SearchForm,
-  Searchbar,
 } from '@strapi/design-system';
 
-import { FaMedium, FaDev } from 'react-icons/fa6';
 import { Trash } from '@strapi/icons';
 
 import axios from 'axios';
 import { useState, useEffect, FormEvent } from 'react';
 
-import formattedDate from '../utils/formatDate';
+import formattedDate from '../utils/formattedDate';
 import PublishButton from './PublishButton';
-
-// import * as Tooltip from '@radix-ui/react-tooltip';
 
 const PublishingTable = () => {
   const [posts, setPosts] = useState([]);
-  const [pageCount, setPageCount] = useState(1);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPosts, setTotalPosts] = useState(0);
-  const [value, setValue] = useState('');
 
-  const paginationPerPage = 5;
-
-  const handleFetchPosts = async (page: number) => {
-    const start = (page - 1) * paginationPerPage;
+  const handleFetchPosts = async () => {
     try {
-      const response = await axios.get(
-        `/medium-publisher/posts?start=${start}&limit=${paginationPerPage}`
-      );
-      setPosts(response.data.posts);
-      setTotalPosts(response.data.totalPosts);
-      setPageCount(Math.ceil(response.data.totalPosts / paginationPerPage));
+      // Get posts from content-publisher plugin
+      const response = await axios.get(`/content-publisher/posts`);
+      setPosts(response.data);
     } catch (error) {
       console.error('Error fetching posts:', error);
     }
   };
 
-  const handleSearchPost = async (event: FormEvent, page: number) => {
-    event.preventDefault();
-    const start = 0;
-
-    if (!value.trim()) return;
-
-    try {
-      const response = await axios.get(`/medium-publisher/search?start=${start}&search=${value}`);
-      setPosts(response.data.posts);
-      setTotalPosts(response.data.totalPosts);
-      setPageCount(Math.ceil(response.data.totalPosts / paginationPerPage));
-    } catch (error) {
-      console.error('Error searching posts:', error);
-    }
-  };
-
-  const handlePageChange = (e: FormEvent, page: number) => {
-    e.preventDefault();
-    if (page < 1 || page > pageCount) return;
-
-    setCurrentPage(page);
-
-    if (value) {
-      handleSearchPost(e, page);
-    } else {
-      handleFetchPosts(page);
-    }
-  };
-
-  const handleDeletePost = async (id: string) => {
-    try {
-      await axios.delete(`/medium-publisher/delete-post`, {
-        data: { id },
-      });
-      handleFetchPosts(currentPage); // Refresh posts after deletion
-    } catch (error) {
-      console.error('Error deleting post:', error);
-    }
-  };
-
   useEffect(() => {
-    handleFetchPosts(currentPage);
-  }, [currentPage]);
+    handleFetchPosts();
+  }, []);
 
   return (
     <Box>
       <Box padding={8} margin={20}>
-        <Box paddingBottom={2} width="30%">
-          <SearchForm onSubmit={(e: FormEvent) => handleSearchPost(e, currentPage)}>
-            <Searchbar
-              size="M"
-              name="searchbar"
-              onClear={() => handleFetchPosts(currentPage)}
-              value={value}
-              onChange={(e: any) => setValue(e.target.value)}
-              clearLabel="Clearing the plugin search"
-              placeholder="e.g: blog title"
-            >
-              Searching for a plugin
-            </Searchbar>
-          </SearchForm>
-        </Box>
         <Table colCount={7} rowCount={posts.length + 1}>
           <Thead>
             <Tr>
@@ -139,9 +64,10 @@ const PublishingTable = () => {
               </Th>
               <Th>
                 <Flex gap={2} direction="row" alignItems="center">
+                  {/* medium icon */}
                   <svg
-                    width="64px"
-                    height="64px"
+                    width="24px"
+                    height="24px"
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -173,13 +99,14 @@ const PublishingTable = () => {
               </Th>
               <Th>
                 <Flex gap={2} direction="row" alignItems="center">
+                  {/* \dev.to icon */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     aria-label="dev.to"
                     role="img"
                     viewBox="0 0 512 512"
-                    width="64px"
-                    height="64px"
+                    width="24px"
+                    height="24px"
                     fill="#000000"
                   >
                     <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
@@ -232,58 +159,15 @@ const PublishingTable = () => {
                   <PublishButton post={post} type="devto" />
                 </Td>
                 <Td>
-                  <Tooltip.Provider>
-                    <Tooltip.Root>
-                      <Tooltip.Trigger asChild>
-                        <IconButton
-                          onClick={() => handleDeletePost(post.documentId)}
-                          variant="danger"
-                          withTooltip={false}
-                        >
-                          <Trash width={20} height={20} />
-                        </IconButton>
-                      </Tooltip.Trigger>
-                      <Tooltip.Portal>
-                        <Tooltip.Content className="TooltipContent" sideOffset={5}>
-                          Delete
-                          <Tooltip.Arrow className="TooltipArrow" />
-                        </Tooltip.Content>
-                      </Tooltip.Portal>
-                    </Tooltip.Root>
-                  </Tooltip.Provider>
+                  <Trash style={{ cursor: 'pointer', color: 'red' }} width={20} height={20} />
                 </Td>
               </Tr>
             ))}
           </Tbody>
         </Table>
       </Box>
-      {posts.length === 0 ? (
-        <Flex direction="column" alignItems="center" gap={2}>
-          <Typography variant="sigma" padding={20} textColor="warning600">
-            Nothing Found!
-          </Typography>
-        </Flex>
-      ) : (
-        <Pagination activePage={currentPage} pageCount={pageCount}>
-          <PreviousLink onClick={(e: FormEvent) => handlePageChange(e, currentPage - 1)}>
-            Go to previous page
-          </PreviousLink>
-          {Array.from({ length: pageCount }, (_, index) => (
-            <PageLink
-              key={index}
-              number={index + 1}
-              onClick={(e: FormEvent) => handlePageChange(e, index + 1)}
-            >
-              Go to page {index + 1}
-            </PageLink>
-          ))}
-          <NextLink onClick={(e: FormEvent) => handlePageChange(e, currentPage + 1)}>
-            Go to next page
-          </NextLink>
-        </Pagination>
-      )}
     </Box>
   );
 };
 
-export { PublicationsTable };
+export default PublishingTable;
