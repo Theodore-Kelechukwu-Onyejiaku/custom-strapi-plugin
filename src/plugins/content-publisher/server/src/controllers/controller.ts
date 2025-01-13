@@ -9,11 +9,16 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
     ctx.body = await strapi.plugin('content-publisher').service('service').getPosts();
   },
 
+  // publish a blog post to dev.to
+  async publishPostToDevTo(ctx) {
+    ctx.body = await strapi
+      .plugin('content-publisher')
+      .service('service')
+      .publishPostToDevTo(ctx.request.body);
+  },
+
   // publish a blog post to medium
   async publishPostToMedium(ctx) {},
-
-  // publish a blog post to dev.to
-  async publishPostToDevTo(ctx) {},
 
   // search for a post
   async getSearchQuery(ctx) {},
