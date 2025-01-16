@@ -18,7 +18,12 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
   },
 
   // publish a blog post to medium
-  async publishPostToMedium(ctx) {},
+  async publishPostToMedium(ctx) {
+    ctx.body = await strapi
+      .plugin('content-publisher')
+      .service('service')
+      .publishPostToMedium(ctx.request.body);
+  },
 
   // search for a post
   async getSearchQuery(ctx) {},

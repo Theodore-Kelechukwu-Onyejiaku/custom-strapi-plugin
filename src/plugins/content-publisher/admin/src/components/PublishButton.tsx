@@ -58,7 +58,7 @@ const PublishButton = ({ post, type }: { post: any; type: string }) => {
 
           <LinkButton
             href={type === 'medium' ? post.mediumLink : post.devToLink}
-            isExternal={true}
+            isexternal="true"
             style={smBtn}
             variant="secondary"
           >
@@ -66,7 +66,7 @@ const PublishButton = ({ post, type }: { post: any; type: string }) => {
           </LinkButton>
         </Flex>
       ) : loading ? (
-        <Button style={bigBtn} loading textColor="neutral800">
+        <Button style={bigBtn} loading textcolor="neutral800">
           <Typography variant="pi">publishing</Typography>
         </Button>
       ) : (
@@ -94,7 +94,7 @@ const PublishButton = ({ post, type }: { post: any; type: string }) => {
           </Button>
           <Button
             href={type === 'medium' ? post.mediumLink : post.devToLink}
-            isExternal
+            isexternal="true"
             style={{ ...smBtn, cursor: 'not-allowed' }}
             variant="secondary"
           >

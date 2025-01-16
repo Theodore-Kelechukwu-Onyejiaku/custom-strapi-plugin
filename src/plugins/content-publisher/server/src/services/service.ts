@@ -20,6 +20,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       throw error;
     }
   },
+
   /**
    * Publish Post to Dev.to
    */
@@ -67,7 +68,55 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       // return the response
       return response.data;
     } catch (error) {
-      console.log(error.response.data);
+      return error.response.data;
+    }
+  },
+
+  /**
+   * Publish Post to Medium
+   */
+  async publishPostToMedium(post: any) {
+    try {
+      // destructuring the post object
+      const { title, content, canonicalUrl, tags, banner } = post.blog;
+      // get the blog tags
+      const blogTags = tags.map((tag) => tag.blogTag);
+
+      // payload to be sent to medium
+      const mediumPayload = {
+        title,
+        content: `# ${title}\n![Image banner](${banner})\n${content}`,
+        canonicalUrl,
+        tags: blogTags,
+        contentFormat: 'markdown',
+      };
+
+      // post
+      const response = await axios.post(
+        `https://api.medium.com/v1/users/${process.env.MEDIUM_USER_ID}/posts`,
+        mediumPayload,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.MEDIUM_API_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      // get the medium url
+      const mediumUrl = response.data?.data?.url;
+
+      // update the post with the medium link
+      await strapi.documents('plugin::content-publisher.post').update({
+        documentId: post.documentId,
+        data: {
+          mediumLink: mediumUrl,
+        } as Partial<any>,
+      });
+
+      // return the response
+      return response.data;
+    } catch (error) {
       throw error;
     }
   },
