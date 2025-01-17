@@ -120,6 +120,37 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       throw error;
     }
   },
+
+  /**
+   * FETCH SINGLE Post
+   */
+  async getSinglePost(query: any) {
+    // get blogId from query
+    const { blogId } = query;
+    try {
+      // find the post
+      const post = await strapi.documents('plugin::content-publisher.post').findFirst({
+        populate: {
+          blog: {
+            populate: ['tags'],
+          },
+        },
+        // filter the post by blogId
+        filters: {
+          blog: {
+            documentId: {
+              $eq: blogId,
+            },
+          },
+        },
+      });
+
+      // return the post
+      return post;
+    } catch (error) {
+      throw error;
+    }
+  },
 });
 
 export default service;

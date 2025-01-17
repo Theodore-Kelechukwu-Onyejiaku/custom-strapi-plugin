@@ -9,6 +9,7 @@ import MediumIcon from './MediumIcon';
 import DevToIcon from './DevToIcon';
 
 export default function InjectedComponent() {
+  // get the blog id
   const { slug, id } = unstable_useContentManagerContext();
   const [post, setPost] = useState({
     mediumLink: '',
@@ -16,16 +17,18 @@ export default function InjectedComponent() {
     blog: null,
   });
 
+  // fetch single post
   const fetchSinglePost = async () => {
-    const post = await axios.get(`/medium-publisher/single-post?blogId=${id}`);
+    const post = await axios.get(`/content-publisher/single-post?blogId=${id}`);
     setPost(post.data);
   };
 
+  // fetch single post
   useEffect(() => {
-    // fetchBlog();
     fetchSinglePost();
   }, []);
 
+  // check if the slug is not blog
   if (slug !== 'api::blog.blog') return null;
 
   return (

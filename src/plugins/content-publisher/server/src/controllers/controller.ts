@@ -6,7 +6,7 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
 
   // get posts
   async getPosts(ctx) {
-    ctx.body = await strapi.plugin('content-publisher').service('service').getPosts();
+    ctx.body = await strapi.plugin('content-publisher').service('service').getPosts(ctx.query);
   },
 
   // publish a blog post to dev.to
@@ -25,14 +25,18 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
       .publishPostToMedium(ctx.request.body);
   },
 
+  // get a single post
+  async getSinglePost(ctx) {
+    ctx.body = await strapi
+      .plugin('content-publisher')
+      .service('service')
+      .getSinglePost(ctx.request.query);
+  },
   // search for a post
   async getSearchQuery(ctx) {},
 
   // delete a post
   async deletePost(ctx) {},
-
-  // get a single post
-  async getSinglePost(ctx) {},
 });
 
 export default controller;
