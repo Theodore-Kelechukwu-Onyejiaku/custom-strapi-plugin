@@ -38,6 +38,7 @@ const PublishingTable = () => {
   const handleFetchPosts = async (page: number) => {
     // Calculate the start index
     const start = (page - 1) * postsPerPage;
+
     try {
       const response = await axios.get(`/content-publisher/posts?start=${start}`);
       setPosts(response.data.posts);
@@ -55,6 +56,7 @@ const PublishingTable = () => {
     if (!searchValue.trim()) {
       return;
     }
+
     try {
       // Make a GET request to the search endpoint
       const response = await axios.get(
@@ -95,7 +97,10 @@ const PublishingTable = () => {
             <Searchbar
               size="M"
               name="searchbar"
-              onClear={() => window.location.reload()}
+              onClear={() => {
+                setSearchValue('');
+                handleFetchPosts(1);
+              }}
               value={searchValue}
               onChange={(e: any) => setSearchValue(e.target.value)}
               clearLabel="Clearing the plugin search"
@@ -182,6 +187,23 @@ const PublishingTable = () => {
           </Tbody>
         </Table>
       </Box>
+      {posts.length <= 0 ? (
+        <Flex
+          gap={{
+            large: 2,
+          }}
+          direction={{
+            medium: 'column',
+          }}
+          alignItems={{
+            initial: 'center',
+          }}
+        >
+          <Typography variant="sigma" padding={20} margin={30} textColor="warning600">
+            Nothing Found!
+          </Typography>
+        </Flex>
+      ) : null}
       {posts.length > 0 ? (
         <Pagination activePage={currentPage} pageCount={pageCount}>
           <PreviousLink onClick={(e: FormEvent) => handlePageChange(e, currentPage - 1)}>

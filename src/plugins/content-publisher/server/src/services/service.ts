@@ -9,7 +9,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
   async getPosts(query: any) {
     try {
       // get start from query params
-      const start = query.start;
+      const { start } = query;
       // get total posts count
       const totalPosts = await strapi.documents('plugin::content-publisher.post').count({});
 
@@ -171,6 +171,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       // get search and start from query
       const { search, start } = query;
 
+      console.log('start ooo,', start);
       // find total posts
       const totalPosts = await strapi.documents('plugin::content-publisher.post').findMany({
         filters: {
@@ -190,7 +191,7 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
           blog: { title: { $contains: search } },
         },
         // return only 5 posts from the start index
-        start: start * postPerPage,
+        start: start,
         limit: postPerPage,
       });
 
