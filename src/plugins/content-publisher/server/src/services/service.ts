@@ -162,6 +162,44 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       throw error;
     }
   },
+
+  /**
+   * Search Query
+   */
+  async getSearchQuery(query: { search: string; start: number }) {
+    try {
+      // get search and start from query
+      const { search, start } = query;
+
+      // find total posts
+      const totalPosts = await strapi.documents('plugin::content-publisher.post').findMany({
+        filters: {
+          blog: { title: { $contains: search } },
+        },
+      });
+
+      // find posts
+      const posts = await strapi.documents('plugin::content-publisher.post').findMany({
+        populate: {
+          blog: {
+            populate: ['tags'],
+          },
+        },
+        // filter only blog titles that contains the search query
+        filters: {
+          blog: { title: { $contains: search } },
+        },
+        // return only 5 posts from the start index
+        start: start * postPerPage,
+        limit: postPerPage,
+      });
+
+      // return the posts and total posts
+      return { posts, totalPosts: totalPosts.length };
+    } catch (error) {
+      throw error;
+    }
+  },
 });
 
 export default service;

@@ -32,8 +32,14 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
       .service('service')
       .getSinglePost(ctx.request.query);
   },
+
   // search for a post
-  async getSearchQuery(ctx) {},
+  async getSearchQuery(ctx) {
+    ctx.body = await strapi
+      .plugin('content-publisher')
+      .service('service')
+      .getSearchQuery(ctx.request.query);
+  },
 
   // delete a post
   async deletePost(ctx) {},
