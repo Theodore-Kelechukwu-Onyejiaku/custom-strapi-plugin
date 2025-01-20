@@ -9,6 +9,10 @@ import {
   Box,
   Link,
   Flex,
+  PageLink,
+  Pagination,
+  PreviousLink,
+  NextLink,
 } from '@strapi/design-system';
 
 import { Trash } from '@strapi/icons';
@@ -23,19 +27,33 @@ import DevToIcon from './DevToIcon';
 
 const PublishingTable = () => {
   const [posts, setPosts] = useState([]);
+  const [pageCount, setPageCount] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const handleFetchPosts = async () => {
+  const postsPerPage = 5;
+
+  const handleFetchPosts = async (page: number) => {
+    // Calculate the start index
+    const start = (page - 1) * postsPerPage;
     try {
-      // Get posts from content-publisher plugin
-      const response = await axios.get(`/content-publisher/posts`);
-      setPosts(response.data);
+      const response = await axios.get(`/content-publisher/posts?start=${start}`);
+      setPosts(response.data.posts);
+      setPageCount(Math.ceil(response.data.totalPosts / postsPerPage));
     } catch (error) {
       console.error('Error fetching posts:', error);
     }
   };
 
+  const handlePageChange = (e: FormEvent, page: number) => {
+    // Prevent the default behavior of the link
+    if (page < 1 || page > pageCount) return;
+    setCurrentPage(page);
+
+    handleFetchPosts(page);
+  };
+
   useEffect(() => {
-    handleFetchPosts();
+    handleFetchPosts(currentPage);
   }, []);
 
   return (
@@ -118,6 +136,25 @@ const PublishingTable = () => {
           </Tbody>
         </Table>
       </Box>
+      {posts.length > 0 ? (
+        <Pagination activePage={currentPage} pageCount={pageCount}>
+          <PreviousLink onClick={(e: FormEvent) => handlePageChange(e, currentPage - 1)}>
+            Go to previous page
+          </PreviousLink>
+          {Array.from({ length: pageCount }, (_, index) => (
+            <PageLink
+              key={index}
+              number={index + 1}
+              onClick={(e: FormEvent) => handlePageChange(e, index + 1)}
+            >
+              Go to page {index + 1}
+            </PageLink>
+          ))}
+          <NextLink onClick={(e: FormEvent) => handlePageChange(e, currentPage + 1)}>
+            Go to next page
+          </NextLink>
+        </Pagination>
+      ) : null}
     </Box>
   );
 };

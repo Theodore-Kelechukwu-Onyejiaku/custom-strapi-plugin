@@ -1,21 +1,32 @@
 import type { Core } from '@strapi/strapi';
 import axios from 'axios';
 
+const postPerPage = 5;
 const service = ({ strapi }: { strapi: Core.Strapi }) => ({
   /**
    * GET Posts with Pagination
    */
-  async getPosts() {
+  async getPosts(query: any) {
     try {
+      // get start from query params
+      const start = query.start;
+      // get total posts count
+      const totalPosts = await strapi.documents('plugin::content-publisher.post').count({});
+
+      // get posts
       const posts = await strapi.documents('plugin::content-publisher.post').findMany({
         populate: {
           blog: {
             populate: ['tags'],
           },
         },
+        // return only 5 posts from the start index
+        start,
+        limit: postPerPage,
       });
 
-      return posts;
+      // return the posts and total posts
+      return { posts, totalPosts };
     } catch (error) {
       throw error;
     }
