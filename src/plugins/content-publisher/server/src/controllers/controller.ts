@@ -42,7 +42,12 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
   },
 
   // delete a post
-  async deletePost(ctx) {},
+  async deletePost(ctx) {
+    ctx.body = await strapi
+      .plugin('content-publisher')
+      .service('service')
+      .deletePost(ctx.request.query);
+  },
 });
 
 export default controller;
