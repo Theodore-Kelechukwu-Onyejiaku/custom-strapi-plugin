@@ -201,6 +201,24 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
       throw error;
     }
   },
+
+  /**
+   * DELETE Post
+   */
+  async deletePost(query: { postId: string }) {
+    try {
+      // get postId from query
+      const { postId } = query;
+
+      // delete the post
+      await strapi.documents('plugin::content-publisher.post').delete({ documentId: postId });
+
+      return 'Post deleted';
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      throw error;
+    }
+  },
 });
 
 export default service;

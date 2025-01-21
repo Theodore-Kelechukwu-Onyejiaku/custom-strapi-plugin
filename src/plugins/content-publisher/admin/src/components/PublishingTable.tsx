@@ -52,8 +52,10 @@ const PublishingTable = () => {
     event.preventDefault(); // Prevent the default form submission behavior
     const start = (page - 1) * postsPerPage; // Calculate the start index for the paginated search
 
-    // If the search input is empty, return early
+    // If the search value is empty, fetch all posts
     if (!searchValue.trim()) {
+      setSearchValue('');
+      handleFetchPosts(1);
       return;
     }
 
@@ -79,6 +81,11 @@ const PublishingTable = () => {
     } else {
       handleFetchPosts(page);
     }
+  };
+
+  const handleDeletePost = async (id: string) => {
+    const response: Response = await axios.delete(`/content-publisher/delete-post?postId=${id}`, {});
+    handleFetchPosts(1);
   };
 
   useEffect(() => {
@@ -180,7 +187,14 @@ const PublishingTable = () => {
                   <PublishButton post={post} type="devto" />
                 </Td>
                 <Td>
-                  <Trash style={{ cursor: 'pointer', color: 'red' }} width={20} height={20} />
+                  <Trash
+                    onClick={() => {
+                      handleDeletePost(post.documentId);
+                    }}
+                    style={{ cursor: 'pointer', color: 'red' }}
+                    width={20}
+                    height={20}
+                  />
                 </Td>
               </Tr>
             ))}
