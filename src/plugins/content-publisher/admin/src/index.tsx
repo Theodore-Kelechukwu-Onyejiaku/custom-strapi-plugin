@@ -4,6 +4,7 @@ import { PLUGIN_ID } from './pluginId';
 import { Initializer } from './components/Initializer';
 import { PluginIcon } from './components/PluginIcon';
 import InjectedComponent from './components/InjectedComponent';
+import pluginPermissions from './permissions';
 
 export default {
   register(app: any) {
@@ -19,6 +20,7 @@ export default {
 
         return App;
       },
+      permissions: pluginPermissions.read,
     });
 
     app.registerPlugin({

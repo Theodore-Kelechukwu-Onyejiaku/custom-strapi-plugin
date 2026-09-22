@@ -25,6 +25,25 @@
     "devToLink": {
       "type": "string"
     },
+    "blueskyLink": {
+      "type": "text"
+    },
+    "contentType": {
+      "type": "string"
+    },
+    "entryId": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "entryUpdatedAt": {
+      "type": "datetime"
+    },
+    "entryPublished": {
+      "type": "boolean",
+      "default": false
+    },
     "blog": {
       "type": "relation",
       "relation": "oneToOne",

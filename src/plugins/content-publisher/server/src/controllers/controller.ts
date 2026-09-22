@@ -25,6 +25,14 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
       .publishPostToMedium(ctx.request.body);
   },
 
+  // publish a blog post to bluesky
+  async publishPostToBluesky(ctx) {
+    ctx.body = await strapi
+      .plugin('content-publisher')
+      .service('service')
+      .publishPostToBluesky(ctx.request.body);
+  },
+
   // get a single post
   async getSinglePost(ctx) {
     ctx.body = await strapi

@@ -1,117 +1,33 @@
-import { useState } from 'react';
-import { Box, Button, Typography, LinkButton, Flex } from '@strapi/design-system';
-import { Play, Check } from '@strapi/icons';
+import { Box, Button, Typography, Flex } from '@strapi/design-system';
+import { Play } from '@strapi/icons';
 
-import axios from 'axios';
+import { getTarget } from './platformTargets';
+import { PublishedState, PublishingState, bigBtn, row } from './PublishState';
+import { usePublishActions } from '../hooks/usePublishActions';
 
-const PublishButton = ({ post, type }: { post: any; type: string }) => {
-  const [loading, setLoading] = useState<boolean>(false);
+// Which platform this button publishes to, and which field holds the resulting URL, both
+// come from platformTargets — so adding a platform there adds it here.
+//
+// `onPublished` refetches the table. It used to call window.location.reload(), which threw
+// away the search term and the page you were on every time you published something.
+const PublishButton = ({ post, type, onPublished }: any) => {
+  const target = getTarget(type);
+  const link = target ? post[target.linkField] : null;
+  const { loading, publish } = usePublishActions(post, target, onPublished);
 
-  // Function to handle publishing the post
-  const handlePublishPost = async () => {
-    try {
-      // Set loading to true
-      setLoading(true);
-      let endpoint;
+  if (loading) return <Box>{<PublishingState />}</Box>;
 
-      // Check if the type is medium or devto
-      if (type === 'medium') {
-        endpoint = '/content-publisher/publish-to-medium';
-      } else {
-        endpoint = '/content-publisher/publish-to-devto';
-      }
-
-      // Post the data
-      await axios.post(endpoint, post);
-
-      // Reload the page
-      window.location.reload();
-    } catch (error) {
-      console.log(error);
-    } finally {
-      // Set loading to false
-      setLoading(false);
-    }
-  };
+  if (link) return <Box>{<PublishedState link={link} />}</Box>;
 
   return (
     <Box>
-      {(type === 'medium' ? post.mediumLink : post.devToLink) ? (
-        <Flex
-          gap={{
-            large: 2,
-          }}
-          direction={{
-            medium: 'row',
-          }}
-          alignItems={{
-            initial: 'center',
-          }}
-        >
-          <Button
-            style={{ ...bigBtn, cursor: 'not-allowed' }}
-            variant="success-light"
-            startIcon={<Check />}
-          >
-            <Typography variant="pi">published</Typography>
-          </Button>
-
-          <LinkButton
-            href={type === 'medium' ? post.mediumLink : post.devToLink}
-            isexternal="true"
-            style={smBtn}
-            variant="secondary"
-          >
-            visit
-          </LinkButton>
-        </Flex>
-      ) : loading ? (
-        <Button style={bigBtn} loading textcolor="neutral800">
-          <Typography variant="pi">publishing</Typography>
+      <Flex {...row}>
+        <Button style={bigBtn} size="S" onClick={publish} startIcon={<Play />} variant="default">
+          <Typography variant="pi">start</Typography>
         </Button>
-      ) : (
-        <Flex
-          gap={{
-            large: 2,
-          }}
-          direction={{
-            medium: 'row',
-          }}
-          alignItems={{
-            initial: 'center',
-          }}
-        >
-          <Button
-            style={bigBtn}
-            size="S"
-            onClick={() => {
-              handlePublishPost();
-            }}
-            startIcon={<Play />}
-            variant="default"
-          >
-            <Typography variant="pi">start</Typography>
-          </Button>
-          <Button
-            href={type === 'medium' ? post.mediumLink : post.devToLink}
-            isexternal="true"
-            style={{ ...smBtn, cursor: 'not-allowed' }}
-            variant="secondary"
-          >
-            ?
-          </Button>
-        </Flex>
-      )}
+      </Flex>
     </Box>
   );
-};
-
-const bigBtn = {
-  width: '100px',
-};
-
-const smBtn = {
-  width: '50px',
 };
 
 export default PublishButton;

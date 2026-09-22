@@ -26,14 +26,25 @@
       "relation": "oneToMany",
       "target": "api::tag.tag"
     },
-    "banner": {
-      "type": "string"
-    },
     "post": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::content-publisher.post",
       "mappedBy": "blog"
+    },
+    "postBanner": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title"
     }
   }
 }

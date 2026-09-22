@@ -1,243 +1,61 @@
-import {
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Td,
-  Th,
-  Typography,
-  Box,
-  Link,
-  Flex,
-  PageLink,
-  Pagination,
-  PreviousLink,
-  NextLink,
-  SearchForm,
-  Searchbar,
-} from '@strapi/design-system';
+import { Flex } from '@strapi/design-system';
+import { Filters, Pagination, SearchInput, Table } from '@strapi/strapi/admin';
 
-import { Trash } from '@strapi/icons';
+import PostCells from './table/PostCells';
+import { Empty, Row } from './table/tableParts';
+import { buildHeaders, FILTER_OPTIONS } from './table/tableHeaders';
+import { usePostsQuery } from '../hooks/usePostsQuery';
+import { usePublishTargets } from '../hooks/usePublishTargets';
 
-import axios from 'axios';
-import { useState, useEffect, FormEvent } from 'react';
-
-import formattedDate from '../utils/formattedDate';
-import PublishButton from './PublishButton';
-import MediumIcon from './MediumIcon';
-import DevToIcon from './DevToIcon';
-
+// Built on Strapi's own Table, Filters, SearchInput and Pagination rather than hand-rolled
+// equivalents. They keep their state in the URL, so sorting, filtering, the search term and
+// the page survive a refresh, are shareable, and work with the back button.
 const PublishingTable = () => {
-  const [posts, setPosts] = useState([]);
-  const [pageCount, setPageCount] = useState(1);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchValue, setSearchValue] = useState('');
+  const { platforms } = usePublishTargets();
+  const { posts, pagination, isLoading, refresh, remove } = usePostsQuery();
 
-  const postsPerPage = 5;
-
-  const handleFetchPosts = async (page: number) => {
-    // Calculate the start index
-    const start = (page - 1) * postsPerPage;
-
-    try {
-      const response = await axios.get(`/content-publisher/posts?start=${start}`);
-      setPosts(response.data.posts);
-      setPageCount(Math.ceil(response.data.totalPosts / postsPerPage));
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-    }
-  };
-
-  const handleSearchPost = async (event: FormEvent, page: number) => {
-    event.preventDefault(); // Prevent the default form submission behavior
-    const start = (page - 1) * postsPerPage; // Calculate the start index for the paginated search
-
-    // If the search value is empty, fetch all posts
-    if (!searchValue.trim()) {
-      setSearchValue('');
-      handleFetchPosts(1);
-      return;
-    }
-
-    try {
-      // Make a GET request to the search endpoint
-      const response = await axios.get(
-        `/content-publisher/search?start=${start}&search=${searchValue}`
-      );
-
-      setPosts(response.data.posts); // Assuming the API returns matching posts
-      setPageCount(Math.ceil(response.data.totalPosts / postsPerPage));
-    } catch (error) {
-      console.error('Error searching posts:', error);
-    }
-  };
-
-  const handlePageChange = (e: FormEvent, page: number) => {
-    if (page < 1 || page > pageCount) return;
-    setCurrentPage(page);
-
-    if (searchValue) {
-      handleSearchPost(e, page);
-    } else {
-      handleFetchPosts(page);
-    }
-  };
-
-  const handleDeletePost = async (id: string) => {
-    const response: Response = await axios.delete(`/content-publisher/delete-post?postId=${id}`, {});
-    handleFetchPosts(1);
-  };
-
-  useEffect(() => {
-    handleFetchPosts(currentPage);
-  }, []);
+  const headers = buildHeaders(platforms);
 
   return (
-    <Box>
-      <Box padding={8} margin={20}>
-        <Box paddingBottom={2} width="30%">
-          <SearchForm
-            onSubmit={(e: FormEvent) => {
-              handleSearchPost(e, currentPage);
-            }}
-          >
-            <Searchbar
-              size="M"
-              name="searchbar"
-              onClear={() => {
-                setSearchValue('');
-                handleFetchPosts(1);
-              }}
-              value={searchValue}
-              onChange={(e: any) => setSearchValue(e.target.value)}
-              clearLabel="Clearing the plugin search"
-              placeholder="e.g: blog title"
-            >
-              Searching for a plugin
-            </Searchbar>
-          </SearchForm>
-        </Box>
-        <Table colCount={7} rowCount={posts.length + 1}>
-          <Thead>
-            <Tr>
-              <Th>
-                <Typography variant="sigma" textColor="neutral600">
-                  Blog ID
-                </Typography>
-              </Th>
-              <Th>
-                <Typography variant="sigma" textColor="neutral600">
-                  Date Created
-                </Typography>
-              </Th>
-              <Th>
-                <Typography variant="sigma" textColor="neutral600">
-                  Blog Title
-                </Typography>
-              </Th>
-              <Th>
-                <Typography variant="sigma" textColor="neutral600">
-                  Blog Link
-                </Typography>
-              </Th>
-              <Th>
-                <Flex gap={2} direction="row" alignItems="center">
-                  {/* Medium icon */}
-                  <MediumIcon />
-                  <Typography variant="sigma">Medium</Typography>
-                </Flex>
-              </Th>
-              <Th>
-                <Flex gap={2} direction="row" alignItems="center">
-                  {/* Dev.to icon */}
-                  <DevToIcon />
-                  <Typography variant="sigma">Dev.to</Typography>
-                </Flex>
-              </Th>
-              <Th></Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {posts.map((post: any) => (
-              <Tr key={post.id}>
-                <Td>
-                  <Typography textColor="neutral800">{post.id}</Typography>
-                </Td>
-                <Td>
-                  <Typography textColor="neutral800">
-                    {formattedDate(post.blog?.updatedAt)}
-                  </Typography>
-                </Td>
-                <Td>
-                  <Typography textColor="neutral800">{post.blog.title.slice(0, 30)}...</Typography>
-                </Td>
-                <Td>
-                  <Typography textColor="neutral800">
-                    <Link
-                      href={`http://localhost:1337/admin/content-manager/collection-types/api::blog.blog/${post.blog.documentId}`}
-                    >
-                      {post.blog.title.slice(0, 30)}...
-                    </Link>
-                  </Typography>
-                </Td>
-                <Td>
-                  <PublishButton post={post} type="medium" />
-                </Td>
-                <Td>
-                  <PublishButton post={post} type="devto" />
-                </Td>
-                <Td>
-                  <Trash
-                    onClick={() => {
-                      handleDeletePost(post.documentId);
-                    }}
-                    style={{ cursor: 'pointer', color: 'red' }}
-                    width={20}
-                    height={20}
-                  />
-                </Td>
-              </Tr>
+    <Flex direction="column" alignItems="stretch" gap={4}>
+      <Flex gap={2} alignItems="center">
+        <SearchInput label="Search for an entry" placeholder="Search by title" />
+        <Filters.Root options={FILTER_OPTIONS}>
+          <Filters.Trigger />
+          <Filters.Popover />
+          <Filters.List />
+        </Filters.Root>
+      </Flex>
+
+      <Table.Root rows={posts} headers={headers} isLoading={isLoading}>
+        <Table.Content>
+          <Table.Head>
+            {headers.map((header) => (
+              <Table.HeaderCell key={header.name} {...header} />
             ))}
-          </Tbody>
-        </Table>
-      </Box>
-      {posts.length <= 0 ? (
-        <Flex
-          gap={{
-            large: 2,
-          }}
-          direction={{
-            medium: 'column',
-          }}
-          alignItems={{
-            initial: 'center',
-          }}
-        >
-          <Typography variant="sigma" padding={20} margin={30} textColor="warning600">
-            Nothing Found!
-          </Typography>
-        </Flex>
-      ) : null}
-      {posts.length > 0 ? (
-        <Pagination activePage={currentPage} pageCount={pageCount}>
-          <PreviousLink onClick={(e: FormEvent) => handlePageChange(e, currentPage - 1)}>
-            Go to previous page
-          </PreviousLink>
-          {Array.from({ length: pageCount }, (_, index) => (
-            <PageLink
-              key={index}
-              number={index + 1}
-              onClick={(e: FormEvent) => handlePageChange(e, index + 1)}
-            >
-              Go to page {index + 1}
-            </PageLink>
-          ))}
-          <NextLink onClick={(e: FormEvent) => handlePageChange(e, currentPage + 1)}>
-            Go to next page
-          </NextLink>
-        </Pagination>
-      ) : null}
-    </Box>
+          </Table.Head>
+          <Table.Loading />
+          <Empty content="No content to publish yet. Create an entry in one of your selected collection types." />
+          <Table.Body>
+            {posts.map((post: any) => (
+              <Row key={post.id}>
+                <PostCells
+                  post={post}
+                  platforms={platforms}
+                  onChanged={refresh}
+                  onDelete={remove}
+                />
+              </Row>
+            ))}
+          </Table.Body>
+        </Table.Content>
+      </Table.Root>
+
+      <Pagination.Root pageCount={pagination.pageCount} total={pagination.total}>
+        <Pagination.PageSize />
+        <Pagination.Links />
+      </Pagination.Root>
+    </Flex>
   );
 };
 
