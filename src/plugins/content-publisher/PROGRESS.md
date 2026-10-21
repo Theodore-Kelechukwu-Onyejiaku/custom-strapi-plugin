@@ -50,7 +50,7 @@ Small, high-leverage. Each one unblocks later work.
   populating, then reading `.url` off it.
   Files: `server/src/services/service.ts` (:41, :92 and the `populate` blocks)
 
-- [ ] **3. Remove dead code**
+- [x] **3. Remove dead code**
   Why: `controllers/test.ts` is a near-duplicate of `controller.ts` and isn't registered — easy to
   edit the wrong file. `routes/admin.ts:1` has an unused non-relative `import policies from
   'src/policies'`.
@@ -188,10 +188,11 @@ Small, high-leverage. Each one unblocks later work.
 
   See `logic.md` for the stored shape and how to add a platform.
 
-- [ ] **17. `package.json` metadata + real README**
-  Why: `version: "0.0.0"`, empty `keywords`, no `repository`/`bugs`/`homepage`, `displayName` is
-  the slug. README is three lines and doesn't document the required `DEVTO_API_KEY`,
-  `MEDIUM_USER_ID`, `MEDIUM_API_TOKEN`.
+- [x] **17. `package.json` metadata + real README**
+  `version` 1.0.0, real `description`, `homepage`/`repository`/`bugs`, ten keywords, and
+  `displayName` is now "Content Publisher". README covers install, the required
+  `ENCRYPTION_KEY`, every platform's credentials, field mapping, permissions, how to add a
+  platform, and the known limitations.
   Files: `package.json`, `README.md`
 
 ---

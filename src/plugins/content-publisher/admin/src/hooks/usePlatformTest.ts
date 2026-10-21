@@ -1,6 +1,6 @@
 // hooks/usePlatformTest.ts
 //
-// Checks the saved (or environment) credentials against the platform itself. The server
+// Checks the .env credentials (or LinkedIn/Facebook sign-in) against the platform itself. The server
 // answers { ok, message } rather than throwing, so a bad key reports what the platform said
 // instead of a bare failure.
 

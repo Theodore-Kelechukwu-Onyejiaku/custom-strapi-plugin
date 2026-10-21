@@ -10,6 +10,8 @@ import { publishEntry } from './publish';
 import { sendToDevTo } from './publishers/devto';
 import { sendToMedium } from './publishers/medium';
 import { sendToBluesky } from './publishers/bluesky';
+import { sendToLinkedIn } from './publishers/linkedin';
+import { sendToFacebook } from './publishers/facebook';
 
 const service = ({ strapi }: { strapi: Core.Strapi }) => ({
   async getPosts(query: any) {
@@ -38,6 +40,14 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
 
   async publishPostToBluesky(post: any) {
     return publishEntry(strapi, post, 'bluesky', 'blueskyLink', sendToBluesky(strapi));
+  },
+
+  async publishPostToLinkedIn(post: any) {
+    return publishEntry(strapi, post, 'linkedIn', 'linkedInLink', sendToLinkedIn);
+  },
+
+  async publishPostToFacebook(post: any) {
+    return publishEntry(strapi, post, 'facebook', 'facebookLink', sendToFacebook);
   },
 });
 

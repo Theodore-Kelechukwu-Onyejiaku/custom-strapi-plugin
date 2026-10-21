@@ -463,10 +463,6 @@ export interface ApiBlogBlog extends Struct.CollectionTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::blog.blog'> &
       Schema.Attribute.Private;
-    post: Schema.Attribute.Relation<
-      'oneToOne',
-      'plugin::content-publisher.post'
-    >;
     postBanner: Schema.Attribute.Media<
       'images' | 'files' | 'videos' | 'audios'
     >;
@@ -474,35 +470,6 @@ export interface ApiBlogBlog extends Struct.CollectionTypeSchema {
     slug: Schema.Attribute.UID<'title'>;
     tags: Schema.Attribute.Relation<'oneToMany', 'api::tag.tag'>;
     title: Schema.Attribute.String;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiContentContent extends Struct.CollectionTypeSchema {
-  collectionName: 'contents';
-  info: {
-    displayName: 'Content';
-    pluralName: 'contents';
-    singularName: 'content';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    content: Schema.Attribute.RichText;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::content.content'
-    > &
-      Schema.Attribute.Private;
-    name: Schema.Attribute.String;
-    publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -549,14 +516,13 @@ export interface PluginContentPublisherPost
   };
   pluginOptions: {
     'content-manager': {
-      visible: true;
+      visible: false;
     };
     'content-type-builder': {
-      visible: true;
+      visible: false;
     };
   };
   attributes: {
-    blog: Schema.Attribute.Relation<'oneToOne', 'api::blog.blog'>;
     blueskyLink: Schema.Attribute.Text;
     contentType: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
@@ -567,6 +533,8 @@ export interface PluginContentPublisherPost
     entryPublished: Schema.Attribute.Boolean &
       Schema.Attribute.DefaultTo<false>;
     entryUpdatedAt: Schema.Attribute.DateTime;
+    facebookLink: Schema.Attribute.Text;
+    linkedInLink: Schema.Attribute.Text;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -1094,7 +1062,6 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::blog.blog': ApiBlogBlog;
-      'api::content.content': ApiContentContent;
       'api::tag.tag': ApiTagTag;
       'plugin::content-publisher.post': PluginContentPublisherPost;
       'plugin::content-releases.release': PluginContentReleasesRelease;

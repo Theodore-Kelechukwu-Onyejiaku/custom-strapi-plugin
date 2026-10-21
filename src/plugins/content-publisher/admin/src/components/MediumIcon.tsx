@@ -1,5 +1,3 @@
-import React from 'react';
-
 // The Medium wordmark, in its own proportions (1043.63 x 592.71) rather than squashed into a
 // square. The viewBox pads it and centres it vertically so it sits on the same optical
 // baseline as the other platform icons.

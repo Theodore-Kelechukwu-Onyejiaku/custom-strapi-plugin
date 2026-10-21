@@ -4,6 +4,101 @@ What has been added to this plugin and why. Newest first.
 
 ---
 
+## Dead code removed
+
+Files nothing imported any more, left over from the old one-button-per-platform table and the
+pasted-key settings: `PublishButton`, `PublishState`, `usePublishActions`, `table/PostsTable`,
+`table/PostRow`, `table/PlatformChips`, `table/TablePagination`, `table/TableToolbar`,
+`settings/PlatformHeader`, `utils/timeAgo`, `utils/getTranslation`, and
+`server/src/controllers/test.ts` (an unregistered copy of `controller.ts`).
+
+Also gone: the empty `getBlogs` handler and its public `GET /api/content-publisher/blogs`
+route (it answered every request with nothing), the empty `PENDING_PLATFORMS` list, the
+unused `setting.getSettings()` service method, and unused imports.
+
+---
+
+## Post type hidden from the Content Manager
+
+`plugin::content-publisher.post` is the plugin's own tracking record, so it is now hidden from
+the Content Manager and the Content-Type Builder (`pluginOptions.*.visible: false`). Editors see
+these records through the publishing table instead. Set in both `server/src/content-types/post.ts`
+and the host's override at `src/extensions/content-publisher/content-types/post/schema.json`,
+because the override replaces the plugin's schema.
+
+---
+
+## LinkedIn and Facebook ("Connect" sign-in)
+
+These two do not take an API key. The editor clicks **Connect LinkedIn** / **Connect
+Facebook** in the settings page, signs in on the provider's own page in a popup, and the
+plugin stores the token it gets back.
+
+### Setup
+
+The app's client id and secret come from `.env` only. They cannot be saved from the admin
+panel (`setting-writes.ts` refuses), and the settings page shows no input for them.
+
+```
+LINKEDIN_CLIENT_ID=...       LINKEDIN_CLIENT_SECRET=...
+FACEBOOK_APP_ID=...          FACEBOOK_APP_SECRET=...
+```
+
+Register this redirect URL in each app (the settings page shows the exact value):
+
+```
+<server url>/content-publisher/connect/linkedIn/callback
+<server url>/content-publisher/connect/facebook/callback
+```
+
+- LinkedIn app: enable "Share on LinkedIn" and "Sign In with LinkedIn using OpenID Connect".
+  Scopes: `openid profile w_member_social`.
+- Meta app: add Facebook Login. Scopes: `pages_show_list pages_manage_posts
+  pages_read_engagement`. Posting is to a **Page** — Meta does not allow apps to post to
+  personal profiles. Until the app passes Meta's App Review, only people added to the app as
+  admins/testers can connect.
+
+### The flow
+
+```
+Connect button (usePlatformConnection)
+  -> POST /settings/platforms/:platform/connect     -> oauth/flow.ts startSignIn
+       creates a one-time `state` (oauth/state.ts), returns the provider URL
+  -> popup opens linkedin.com / facebook.com, editor signs in
+  -> GET /connect/:platform/callback?code&state     -> oauth/flow.ts finishSignIn
+       checks + deletes the state, swaps the code for a token (oauth/linkedin.ts,
+       oauth/facebook.ts), saves it encrypted (oauth/connections.ts)
+  -> the admin page sees the popup land on "Connected", closes it, reloads settings
+```
+
+The callback is `auth: false` because the provider calls it, not the admin app. The
+one-time, ten-minute `state` is what stops anyone else from using it.
+
+### Where the token lives
+
+`settings.connections[platformKey]` in the plugin's core store, encrypted with
+`admin::encryption`. `presentSettings` replaces it with `{ redirectUri, account }` — name and
+expiry only, never a token — before anything reaches the browser.
+
+- LinkedIn tokens last 60 days and cannot be refreshed, so the page shows the expiry and a
+  Reconnect button.
+- Facebook: the user token is swapped for a long-lived one, and the Page tokens fetched with
+  it never expire. If the user manages several Pages, a dropdown picks which one to post as.
+
+### Publishing
+
+`publish-secrets.ts` decides what a publisher gets: API keys for Dev.to/Medium/Bluesky, or
+`{ ACCESS_TOKEN, ACCOUNT_ID }` from the connection for LinkedIn/Facebook.
+
+- `publishers/linkedin.ts` posts an article share to `/rest/posts` (`LinkedIn-Version`
+  header, bump it yearly). LinkedIn does not scrape links, so the card is the mapped heading
+  and summary.
+- `publishers/facebook.ts` posts `message` + `link` to `/{page-id}/feed`.
+
+The tracking record gained `linkedInLink` and `facebookLink`.
+
+---
+
 ## Publishing settings
 
 Lets an editor choose which collection types they publish from, and map each platform's
@@ -52,7 +147,8 @@ differently — a Blog's `body` and an Article's `section` both feed dev.to's
 2. Add it to `PLATFORMS` in `server/src/platforms/index.ts`.
 3. Add a publish function in `server/src/services/service.ts`.
 4. Optionally add an icon and blurb to `PLATFORM_META` in
-   `admin/src/components/settings/platformMeta.ts`, and remove it from `PENDING_PLATFORMS`.
+   `admin/src/components/settings/platformMeta.ts`, and a target in
+   `admin/src/components/platformTargets.ts` so it shows in the publish menu.
 
 Nothing in the admin panel needs changing: the settings page builds its dropdowns from
 whatever the server serves, and filters each one by that field's `accepts`.
@@ -271,21 +367,22 @@ every other role needs them ticked under *Settings > Roles*.
 
 ### API keys
 
-Each platform declares the env vars it needs. Those can now also be set in the admin panel,
-which matters because a Marketplace installer often cannot edit `.env` or restart the
-server, and on a managed host rotating a key would otherwise mean a redeploy.
+Each platform declares the env vars it needs, and **they are read from the project's root
+`.env` file only** (`services/credentials.ts` → `resolveSecrets`). There is no way to enter
+a key in the admin panel: a key pasted into a form ends up in the database and its backups,
+and is one shoulder-surf away from leaking.
 
-- **Stored encrypted** with Strapi's own `admin::encryption` service — the AES-256-GCM used
-  for API tokens, keyed off `admin.secrets.encryptionKey`. If no encryption key is
-  configured the save is *refused*, never silently stored as plaintext.
-- **A key saved here overrides the env var of the same name.** Clearing it falls back to
-  the environment rather than leaving a stale key behind.
-- **Write-only.** `services/present-settings.ts` replaces the stored map with a summary
-  before anything is sent: `{ configured, source, last4 }`. The key itself never leaves the
-  server except to the platform it belongs to.
+- The settings page shows each env var as **Set in .env** or **Missing**, read-only.
+- `services/present-settings.ts` sends `{ configured }` per env var — not the value, not
+  even its last characters.
+- The old `PUT /settings/platforms/:platform/credentials` route is gone. Keys saved through
+  it by earlier versions are ignored, and `settings-store.ts` drops them from the store on
+  the next settings save.
+- Changing a key means editing `.env` and restarting Strapi.
 
-Requires `ENCRYPTION_KEY` in the environment, read in `config/admin.ts` as
-`admin.secrets.encryptionKey`.
+`ENCRYPTION_KEY` (read in `config/admin.ts` as `admin.secrets.encryptionKey`) is still
+required — for the LinkedIn and Facebook sign-in tokens, which are issued at runtime and so
+have to be stored.
 
 ### Still coupled
 

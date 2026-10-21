@@ -55,10 +55,4 @@ export default [
     handler: 'setting.testPlatform',
     config: can(SETTINGS_UPDATE),
   },
-  {
-    method: 'PUT',
-    path: '/settings/platforms/:platform/credentials',
-    handler: 'setting.updateCredential',
-    config: can(SETTINGS_UPDATE),
-  },
 ];

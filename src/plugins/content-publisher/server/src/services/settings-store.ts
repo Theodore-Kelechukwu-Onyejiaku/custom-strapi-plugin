@@ -11,10 +11,16 @@ import type { Settings } from '../platforms';
 const store = (strapi: Core.Strapi) =>
   strapi.store({ type: 'plugin', name: 'content-publisher', key: 'settings' });
 
-// the saved settings, filled in with defaults so callers never see null
+// The saved settings, filled in with defaults so callers never see null.
+//
+// `credentials` is dropped: older versions saved API keys pasted into the admin panel there.
+// Keys now come from .env only, so those are never read, and the next save removes them.
 export const getSettings = async (strapi: Core.Strapi): Promise<Settings> => {
-  const saved = (await store(strapi).get({})) as Partial<Settings> | null;
-  return { ...EMPTY_SETTINGS, ...(saved ?? {}) };
+  const saved = ((await store(strapi).get({})) ?? {}) as Partial<Settings> & {
+    credentials?: unknown;
+  };
+  const { credentials, ...rest } = saved;
+  return { ...EMPTY_SETTINGS, ...rest };
 };
 
 // merges a patch into what is saved, so saving one part never clobbers another

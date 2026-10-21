@@ -1,16 +1,15 @@
 // components/platformTargets.ts
 //
 // The publish surfaces — the table and the content-manager panel — share this list, so a
-// new platform is wired into both at once.
-//
-// The settings page deliberately does not use it: which platforms exist there comes from
-// the server, because that is also where their fields and credentials are declared.
+// new platform is wired into both at once. The settings page gets its list from the server.
 
 import type React from 'react';
 
 import MediumIcon from './MediumIcon';
 import DevToIcon from './DevToIcon';
 import BlueskyIcon from './BlueskyIcon';
+import LinkedInIcon from './LinkedInIcon';
+import FacebookIcon from './FacebookIcon';
 
 export type PlatformTarget = {
   type: string;
@@ -48,6 +47,22 @@ export const PLATFORM_TARGETS: PlatformTarget[] = [
     Icon: BlueskyIcon,
     linkField: 'blueskyLink',
     endpoint: '/content-publisher/publish-to-bluesky',
+  },
+  {
+    type: 'linkedin',
+    key: 'linkedIn',
+    label: 'LinkedIn',
+    Icon: LinkedInIcon,
+    linkField: 'linkedInLink',
+    endpoint: '/content-publisher/publish-to-linkedin',
+  },
+  {
+    type: 'facebook',
+    key: 'facebook',
+    label: 'Facebook',
+    Icon: FacebookIcon,
+    linkField: 'facebookLink',
+    endpoint: '/content-publisher/publish-to-facebook',
   },
 ];
 

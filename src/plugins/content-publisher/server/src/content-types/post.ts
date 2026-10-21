@@ -11,12 +11,14 @@ const schema = {
   options: {
     draftAndPublish: false,
   },
+  // Internal to the plugin: the publishing table is how editors see these records, so the
+  // type is kept out of the Content Manager and the Content-Type Builder.
   pluginOptions: {
     'content-manager': {
-      visible: true,
+      visible: false,
     },
     'content-type-builder': {
-      visible: true,
+      visible: false,
     },
   },
   attributes: {
@@ -27,6 +29,12 @@ const schema = {
       type: 'text',
     },
     blueskyLink: {
+      type: 'text',
+    },
+    linkedInLink: {
+      type: 'text',
+    },
+    facebookLink: {
       type: 'text',
     },
     // Which entry this record tracks. A uid plus a documentId rather than a relation,
@@ -52,15 +60,6 @@ const schema = {
     entryPublished: {
       type: 'boolean',
       default: false,
-    },
-    // Kept, and still written for blog entries, so the `post` field on api::blog.blog and
-    // every existing row keep working. Nothing reads it any more — contentType/entryId is
-    // the reference. See PROGRESS.md before removing it.
-    blog: {
-      type: 'relation',
-      relation: 'oneToOne',
-      target: 'api::blog.blog',
-      inversedBy: 'post',
     },
   },
 };

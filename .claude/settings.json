@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "mcp__local-mcp__delete_plugin-content-publisher_post",
+      "mcp__local-mcp__list_tag"
+    ]
+  }
+}

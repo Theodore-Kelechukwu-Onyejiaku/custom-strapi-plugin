@@ -3,16 +3,11 @@
 // The shapes the settings feature works with. Kept apart from the platform list so each
 // platform file can import these without pulling in every other platform.
 
+import type { Connection } from './connection-types';
+
 // Strapi attribute types a platform field may be mapped to. The settings page filters
 // each dropdown by this, so a title field never offers an image attribute.
-export type AcceptedType =
-  | 'string'
-  | 'text'
-  | 'richtext'
-  | 'uid'
-  | 'email'
-  | 'media'
-  | 'relation';
+export type AcceptedType = 'string' | 'text' | 'richtext' | 'uid' | 'email' | 'media' | 'relation';
 
 export type PlatformField = {
   // the key in the platform's API payload, e.g. dev.to's `body_markdown`
@@ -33,6 +28,8 @@ export type Platform = {
   // Values sent with every request that are not sourced from a content type, so they are
   // shown read-only in the settings page rather than as dropdowns.
   fixedOptions?: Record<string, unknown>;
+  // Set for sign-in (OAuth) platforms: `envVars` is then the app's id and secret, from .env.
+  oauth?: { scopes: string[] };
 };
 
 // One collection type's mapping: platform field key -> attribute name on that type.
@@ -53,7 +50,6 @@ export type Settings = {
   // platform key -> whether it may be published to. Missing means enabled, so an install
   // that upgrades without touching the settings page keeps publishing as it did.
   enabled: Record<string, boolean>;
-  // platform key -> env var name -> the API key, encrypted. Never sent to the admin panel;
-  // it leaves the server only as the summary in services/present-settings.ts.
-  credentials: Record<string, Record<string, string>>;
+  // platform key -> the account signed in through OAuth. Tokens encrypted, never sent out.
+  connections: Record<string, Connection>;
 };

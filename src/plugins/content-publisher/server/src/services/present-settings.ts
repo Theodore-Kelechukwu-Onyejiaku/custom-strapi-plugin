@@ -1,37 +1,37 @@
 // services/present-settings.ts
 //
-// What leaves the server. The stored settings hold encrypted API keys, which the admin
-// panel has no use for and should never receive, so they are swapped for a summary before
-// anything is sent back.
+// What leaves the server. API keys live in .env and sign-in tokens are encrypted in the
+// store; the admin panel gets neither — only whether each key is set, and who is signed in.
 
 import type { Core } from '@strapi/strapi';
 import { PLATFORMS } from '../platforms';
 import type { Platform, Settings } from '../platforms';
-import { resolveCredential } from './credentials';
+import { resolveSecrets } from './credentials';
+import { presentConnection } from './oauth/connections';
+import { redirectUriFor } from './oauth/flow';
 
-// Whether a key is set, where it came from, and its last four characters so an operator
-// can tell which key is in place. Never the key itself.
-const summarise = (strapi: Core.Strapi, settings: Settings, platform: Platform) => {
-  const summary: Record<string, any> = {};
-
-  for (const name of platform.envVars) {
-    const value = resolveCredential(strapi, settings, platform.key, name);
-    const stored = Boolean(settings.credentials?.[platform.key]?.[name]);
-
-    summary[name] = {
-      configured: Boolean(value),
-      source: stored ? 'settings' : value ? 'env' : null,
-      last4: value ? value.slice(-4) : null,
-    };
-  }
-
-  return summary;
+// Whether each env var is set. Not even part of the value is sent, so nothing about a key
+// can be read off the settings page or the network tab.
+const summarise = (platform: Platform) => {
+  const secrets = resolveSecrets(platform);
+  return Object.fromEntries(
+    platform.envVars.map((name) => [name, { configured: Boolean(secrets[name]) }])
+  );
 };
 
 export const presentSettings = (strapi: Core.Strapi, settings: Settings) => ({
   ...settings,
-  credentials: Object.fromEntries(
-    PLATFORMS.map((platform) => [platform.key, summarise(strapi, settings, platform)])
+  credentials: Object.fromEntries(PLATFORMS.map((platform) => [platform.key, summarise(platform)])),
+  // replaces the stored connections, which hold encrypted tokens. The redirect URL is sent
+  // so the settings page can show what to register in the provider's app.
+  connections: Object.fromEntries(
+    PLATFORMS.filter((platform) => platform.oauth).map((platform) => [
+      platform.key,
+      {
+        redirectUri: redirectUriFor(strapi, platform.key),
+        account: presentConnection(settings.connections?.[platform.key]),
+      },
+    ])
   ),
 });
 

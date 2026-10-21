@@ -4,13 +4,12 @@ import PlatformPanel from './PlatformPanel';
 import { PLATFORM_META } from './platformMeta';
 import { usePlatformMapping } from '../../hooks/usePlatformMapping';
 import { usePlatformEnabled } from '../../hooks/usePlatformEnabled';
-import type { Platform, Settings } from '../../utils/settingsTypes';
 
 // One platform as an accordion row: click the name to open its credentials and mapping.
 // Collapsed by default, so the page opens as a short list rather than a wall of fields.
 const PlatformCard = (props: any) => {
   const { platform, contentTypes, selectedTypes, saved, savedEnabled, canUpdate } = props;
-  const { summaries, onSaved, onError } = props;
+  const { summaries, connection, onSaved, onError } = props;
   const shared = { platformKey: platform.key, platformLabel: platform.label, onSaved, onError };
 
   const form = usePlatformMapping({ ...shared, saved });
@@ -47,6 +46,7 @@ const PlatformCard = (props: any) => {
             form={form}
             enabled={enabling.enabled}
             summaries={summaries}
+            connection={connection}
             canUpdate={canUpdate}
             onSaved={onSaved}
             onError={onError}

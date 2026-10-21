@@ -12,7 +12,7 @@ const TestConnection = ({ platform, ready, onTest, testing }: any) => (
     {!ready ? (
       <Box paddingTop={1}>
         <Typography variant="pi" textColor="neutral600">
-          {`Set ${platform.envVars.join(' and ')} to test the connection.`}
+          {`Add ${platform.envVars.join(' and ')} to .env and restart Strapi to test.`}
         </Typography>
       </Box>
     ) : null}

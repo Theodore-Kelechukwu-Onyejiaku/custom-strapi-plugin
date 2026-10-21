@@ -8,7 +8,7 @@
 
 import type { Core } from '@strapi/strapi';
 
-import { BLOG_UID, POST_UID } from './publish-config';
+import { POST_UID } from './publish-config';
 import { findRecord, publishedVersion, snapshotOf } from './tracking';
 
 // The plugin compiles without the host's generated content-type registry, so the document
@@ -35,11 +35,11 @@ export const onEntryChanged = async (strapi: Core.Strapi, uid: string, entry: an
   await strapi.documents(POST_UID).create({
     data: asData({
       ...snapshot,
-      // still written for blogs so the `post` field on api::blog.blog keeps working
-      ...(uid === BLOG_UID ? { blog: entry.documentId } : {}),
       mediumLink: null,
       devToLink: null,
       blueskyLink: null,
+      linkedInLink: null,
+      facebookLink: null,
     }),
   });
 };

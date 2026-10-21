@@ -26,12 +26,6 @@
       "relation": "oneToMany",
       "target": "api::tag.tag"
     },
-    "post": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "plugin::content-publisher.post",
-      "mappedBy": "blog"
-    },
     "postBanner": {
       "type": "media",
       "multiple": false,

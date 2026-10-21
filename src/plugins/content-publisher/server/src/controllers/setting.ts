@@ -38,13 +38,6 @@ const settingController = ({ strapi }: { strapi: Core.Strapi }) => ({
     const { platform } = ctx.params;
     ctx.body = await settings(strapi).setEnabled(platform, ctx.request.body?.enabled);
   },
-
-  // save one platform's API key; an empty value clears it back to the environment
-  async updateCredential(ctx) {
-    const { platform } = ctx.params;
-    const { name, value } = ctx.request.body ?? {};
-    ctx.body = await settings(strapi).setCredential(platform, name, value);
-  },
 });
 
 export default settingController;

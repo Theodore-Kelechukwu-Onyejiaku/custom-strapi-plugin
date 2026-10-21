@@ -8,7 +8,7 @@ import { errors } from '@strapi/utils';
 
 import { getPlatform } from '../platforms';
 import { resolveFields } from './resolve-fields';
-import { resolveSecrets } from './credentials';
+import { secretsFor } from './publish-secrets';
 import { getSettings } from './settings-store';
 import { POST_UID } from './publish-config';
 import { resolveSource } from './publish-source';
@@ -24,7 +24,7 @@ export const publishEntry = async (
   strapi: Core.Strapi,
   post: any,
   platformKey: string,
-  linkField: 'devToLink' | 'mediumLink' | 'blueskyLink',
+  linkField: 'devToLink' | 'mediumLink' | 'blueskyLink' | 'linkedInLink' | 'facebookLink',
   send: Send
 ) => {
   const platform = getPlatform(platformKey);
@@ -40,14 +40,8 @@ export const publishEntry = async (
     throw new ApplicationError(`${platform.label} is turned off in the publishing settings.`);
   }
 
-  // an admin-panel key wins over the env var; missing entirely is worth saying plainly
-  const secrets = resolveSecrets(strapi, settings, platform);
-  const missing = platform.envVars.filter((name) => !secrets[name]);
-  if (missing.length) {
-    throw new ApplicationError(
-      `${platform.label} is missing ${missing.join(', ')}. Add it in the publishing settings.`
-    );
-  }
+  // an API key, or for LinkedIn and Facebook the signed-in account's token
+  const secrets = await secretsFor(strapi, settings, platform);
 
   const { uid, entry, fieldMap } = await resolveSource(strapi, post, platform, settings);
   const url = await send(resolveFields(strapi, uid, platform, fieldMap, entry), secrets);

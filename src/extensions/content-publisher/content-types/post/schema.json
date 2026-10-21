@@ -12,10 +12,10 @@
   },
   "pluginOptions": {
     "content-manager": {
-      "visible": true
+      "visible": false
     },
     "content-type-builder": {
-      "visible": true
+      "visible": false
     }
   },
   "attributes": {
@@ -26,6 +26,12 @@
       "type": "string"
     },
     "blueskyLink": {
+      "type": "text"
+    },
+    "linkedInLink": {
+      "type": "text"
+    },
+    "facebookLink": {
       "type": "text"
     },
     "contentType": {
@@ -43,12 +49,6 @@
     "entryPublished": {
       "type": "boolean",
       "default": false
-    },
-    "blog": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::blog.blog",
-      "inversedBy": "post"
     }
   }
 }

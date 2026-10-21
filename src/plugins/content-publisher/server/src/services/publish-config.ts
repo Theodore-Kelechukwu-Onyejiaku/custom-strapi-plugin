@@ -39,6 +39,16 @@ export const LEGACY_MAPS: Record<string, FieldMap> = {
     description: 'content',
     thumb: 'postBanner',
   },
+  linkedIn: {
+    commentary: 'title',
+    source: 'canonicalUrl',
+    title: 'title',
+    description: 'content',
+  },
+  facebook: {
+    message: 'title',
+    link: 'canonicalUrl',
+  },
   medium: {
     title: 'title',
     content: 'content',

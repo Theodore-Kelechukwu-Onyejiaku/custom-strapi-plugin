@@ -50,6 +50,18 @@ export default [
     config,
   },
   {
+    method: 'POST',
+    path: '/publish-to-linkedin',
+    handler: 'controller.publishPostToLinkedIn',
+    config,
+  },
+  {
+    method: 'POST',
+    path: '/publish-to-facebook',
+    handler: 'controller.publishPostToFacebook',
+    config,
+  },
+  {
     method: 'DELETE',
     path: '/delete-post',
     handler: 'controller.deletePost',

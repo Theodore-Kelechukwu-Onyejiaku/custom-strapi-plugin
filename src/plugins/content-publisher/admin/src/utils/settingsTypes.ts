@@ -3,6 +3,10 @@
 // The shapes GET /content-publisher/settings returns. Mirrors server/src/platforms/types.ts
 // — change one and change the other.
 
+import type { ConnectionSummary } from './connectionTypes';
+
+export type { ConnectedAccount, ConnectionSummary } from './connectionTypes';
+
 export type Attribute = { name: string; type: string; target?: string };
 
 export type ContentType = { uid: string; displayName: string; attributes: Attribute[] };
@@ -21,6 +25,8 @@ export type Platform = {
   fields: PlatformField[];
   envVars: string[];
   fixedOptions?: Record<string, unknown>;
+  // set when the editor signs in (LinkedIn, Facebook) rather than pasting a key
+  oauth?: { scopes: string[] };
 };
 
 // platform field key -> attribute name on one collection type
@@ -34,17 +40,13 @@ export type Settings = {
   platforms: Record<string, PlatformMap>;
   // missing means enabled, so an upgrade keeps publishing as it did
   enabled: Record<string, boolean>;
-  // platform key -> env var name -> summary. Never the key itself: the server replaces the
-  // encrypted values with this before responding.
+  // platform key -> env var name -> whether it is set in .env. Never the value itself.
   credentials: Record<string, Record<string, CredentialSummary>>;
+  // platform key -> who is signed in, for the OAuth platforms only
+  connections: Record<string, ConnectionSummary>;
 };
 
-export type CredentialSummary = {
-  configured: boolean;
-  // where the key in effect came from, or null when none is set
-  source: 'settings' | 'env' | null;
-  last4: string | null;
-};
+export type CredentialSummary = { configured: boolean };
 
 export type SettingsResponse = {
   platforms: Platform[];

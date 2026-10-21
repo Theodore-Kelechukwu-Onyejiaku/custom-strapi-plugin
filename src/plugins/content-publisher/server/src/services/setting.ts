@@ -1,7 +1,7 @@
 // services/setting.ts
 //
-// Thin wiring. Writes live in setting-writes.ts, the store in settings-store.ts, API keys in
-// credentials.ts. Responses go through presentSettings, which keeps encrypted keys out.
+// Thin wiring. Writes live in setting-writes.ts, the store in settings-store.ts. API keys
+// are read from .env (credentials.ts) and are never written from here.
 
 import type { Core } from '@strapi/strapi';
 import { errors } from '@strapi/utils';
@@ -16,11 +16,6 @@ import { verifyPlatform } from './verify';
 const { ValidationError } = errors;
 
 const settingService = ({ strapi }: { strapi: Core.Strapi }) => ({
-  // raw, including encrypted keys: for the publish path, not for responses
-  getSettings() {
-    return getSettings(strapi);
-  },
-
   async find() {
     return {
       platforms: PLATFORMS,
@@ -47,11 +42,6 @@ const settingService = ({ strapi }: { strapi: Core.Strapi }) => ({
   async setEnabled(platformKey: string, value: unknown) {
     const platform = this.requirePlatform(platformKey);
     return presentSettings(strapi, await writes.setEnabled(strapi, platform, value));
-  },
-
-  async setCredential(platformKey: string, name: unknown, value: unknown) {
-    const platform = this.requirePlatform(platformKey);
-    return presentSettings(strapi, await writes.setCredential(strapi, platform, name, value));
   },
 
   async testPlatform(platformKey: string) {

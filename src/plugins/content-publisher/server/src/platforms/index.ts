@@ -9,11 +9,14 @@
 import devTo from './devto';
 import medium from './medium';
 import bluesky from './bluesky';
+import linkedIn from './linkedin';
+import facebook from './facebook';
 import type { Platform, Settings } from './types';
 
 export * from './types';
+export * from './connection-types';
 
-export const PLATFORMS: Platform[] = [devTo, medium, bluesky];
+export const PLATFORMS: Platform[] = [devTo, medium, bluesky, linkedIn, facebook];
 
 export const getPlatform = (key: string): Platform | undefined =>
   PLATFORMS.find((platform) => platform.key === key);
@@ -22,7 +25,7 @@ export const EMPTY_SETTINGS: Settings = {
   contentTypes: [],
   platforms: {},
   enabled: {},
-  credentials: {},
+  connections: {},
 };
 
 // Suffix used for a relation field's item attribute, e.g. `tags__item` holds `blogTag`.
