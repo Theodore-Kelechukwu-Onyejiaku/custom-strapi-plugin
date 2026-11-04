@@ -1,31 +1,23 @@
-import React from 'react';
-
+// The Medium wordmark, in its own proportions (1043.63 x 592.71) rather than squashed into a
+// square. The viewBox pads it and centres it vertically so it sits on the same optical
+// baseline as the other platform icons.
+//
+// `currentColor`, not a hardcoded near-black: the previous #0F0F0F disappeared against
+// Strapi's dark theme.
 export default function MediumIcon() {
   return (
     <svg
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="Medium"
+      role="img"
+      viewBox="-83 -308.46 1209.63 1209.63"
       width="24px"
       height="24px"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+      fill="currentColor"
     >
-      <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-      <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
-      <g id="SVGRepo_iconCarrier">
-        {' '}
-        <path
-          d="M13 12C13 15.3137 10.3137 18 7 18C3.68629 18 1 15.3137 1 12C1 8.68629 3.68629 6 7 6C10.3137 6 13 8.68629 13 12Z"
-          fill="#0F0F0F"
-        ></path>{' '}
-        <path
-          d="M23 12C23 14.7614 22.5523 17 22 17C21.4477 17 21 14.7614 21 12C21 9.23858 21.4477 7 22 7C22.5523 7 23 9.23858 23 12Z"
-          fill="#0F0F0F"
-        ></path>{' '}
-        <path
-          d="M17 18C18.6569 18 20 15.3137 20 12C20 8.68629 18.6569 6 17 6C15.3431 6 14 8.68629 14 12C14 15.3137 15.3431 18 17 18Z"
-          fill="#0F0F0F"
-        ></path>{' '}
-      </g>
+      <path d="M588.67 296.36c0 163.67-131.78 296.35-294.33 296.35S0 460 0 296.36 131.78 0 294.34 0s294.33 132.69 294.33 296.36" />
+      <path d="M911.56 296.36c0 154.06-65.89 278.97-147.17 278.97s-147.17-124.91-147.17-278.97S683.1 17.39 764.39 17.39s147.17 124.91 147.17 278.97" />
+      <path d="M1043.63 296.36c0 138-23.17 249.94-51.76 249.94s-51.75-111.91-51.75-249.94 23.17-249.94 51.75-249.94 51.76 111.9 51.76 249.94" />
     </svg>
   );
 }

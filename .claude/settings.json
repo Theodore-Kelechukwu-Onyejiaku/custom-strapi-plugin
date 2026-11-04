@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "mcp__local-mcp__delete_plugin-content-publisher_post",
+      "mcp__local-mcp__list_tag",
+      "WebFetch(domain:strapi.io)",
+      "Skill(claude-api)",
+      "Skill(claude-api:*)",
+      "Bash(grep \"\\\\.d\\\\.ts$\")",
+      "Bash(npx strapi-plugin *)",
+      "Bash(rsvg-convert -w 1600 03-two-mcp-servers.svg -o 03-two-mcp-servers.png)",
+      "Bash(node -e 'const p=require\\(\"./package.json\"\\);console.log\\(p.dependencies,p.peerDependencies\\)')",
+      "Read(//Users/theodore/dev/Projects/**)",
+      "Bash(cd /Users/theodore/dev/Projects/custom-strapi-plugin/src/plugins/content-publisher/admin/src *)",
+      "Read(//Users/theodore/dev/server/**)",
+      "Bash(npm view *)",
+      "Bash(npx vitest *)"
+    ]
+  }
+}

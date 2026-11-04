@@ -12,10 +12,10 @@
   },
   "pluginOptions": {
     "content-manager": {
-      "visible": true
+      "visible": false
     },
     "content-type-builder": {
-      "visible": true
+      "visible": false
     }
   },
   "attributes": {
@@ -25,11 +25,30 @@
     "devToLink": {
       "type": "string"
     },
-    "blog": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::blog.blog",
-      "inversedBy": "post"
+    "blueskyLink": {
+      "type": "text"
+    },
+    "linkedInLink": {
+      "type": "text"
+    },
+    "facebookLink": {
+      "type": "text"
+    },
+    "contentType": {
+      "type": "string"
+    },
+    "entryId": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "entryUpdatedAt": {
+      "type": "datetime"
+    },
+    "entryPublished": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
