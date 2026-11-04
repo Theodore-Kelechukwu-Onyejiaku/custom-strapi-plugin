@@ -1,7 +1,7 @@
 {
   "name": "content-publisher",
-  "version": "1.0.0",
-  "description": "Publish Strapi content to Dev.to, Medium and Bluesky from the admin panel, with per-platform field mapping and encrypted API keys.",
+  "version": "2.0.0",
+  "description": "Publish Strapi entries to Dev.to, Medium, Bluesky, LinkedIn and Facebook from the admin, and track where each one went.",
   "license": "MIT",
   "author": "Theodore Kelechukwu Onyejiaku <theodoreonyejiaku@gmail.com>",
   "homepage": "https://github.com/Theodore-Kelechukwu-Onyejiaku/custom-strapi-plugin#readme",
@@ -23,7 +23,10 @@
     "dev.to",
     "medium",
     "bluesky",
-    "atproto"
+    "atproto",
+    "linkedin",
+    "facebook",
+    "mcp"
   ],
   "type": "commonjs",
   "exports": {
@@ -46,7 +49,8 @@
   "files": [
     "dist",
     "logo.svg",
-    "logo-mono.svg"
+    "logo-mono.svg",
+    "logo.png"
   ],
   "scripts": {
     "build": "strapi-plugin build",
@@ -54,33 +58,42 @@
     "watch:link": "strapi-plugin watch:link",
     "verify": "strapi-plugin verify",
     "test:ts:front": "run -T tsc -p admin/tsconfig.json",
-    "test:ts:back": "run -T tsc -p server/tsconfig.json"
+    "test:ts:back": "run -T tsc -p server/tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "@strapi/design-system": "^2.0.0-rc.14",
-    "@strapi/icons": "^2.0.0-rc.14",
+    "@ai-sdk/anthropic": "^4.0.85",
+    "@ai-sdk/mcp": "^2.0.81",
+    "@ai-sdk/react": "^4.0.152",
+    "@strapi/design-system": "^2.2.4",
+    "@strapi/icons": "^2.2.4",
+    "ai": "^7.0.148",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-intl": "^7.1.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "react-router-dom": "^6.0.0",
-    "styled-components": "^6.0.0"
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^6.28.1",
+    "remark-gfm": "^4.0.1",
+    "styled-components": "^6.1.14",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@strapi/strapi": "5.54.0",
     "@strapi/sdk-plugin": "^5.2.8",
+    "@strapi/strapi": "5.60.0",
+    "@strapi/typescript-utils": "5.60.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
     "prettier": "^3.4.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.1",
     "styled-components": "^6.1.14",
-    "@types/react": "^18.3.18",
-    "@types/react-dom": "^18.3.5",
-    "@strapi/typescript-utils": "5.54.0",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.7"
   },
   "peerDependencies": {
     "@strapi/strapi": "^5.54.0",
-    "@strapi/sdk-plugin": "^5.2.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.1",
@@ -90,6 +103,6 @@
     "kind": "plugin",
     "name": "content-publisher",
     "displayName": "Content Publisher",
-    "description": "Publish Strapi content to Dev.to, Medium and Bluesky from the admin panel, with per-platform field mapping and encrypted API keys."
+    "description": "Publish Strapi entries to Dev.to, Medium, Bluesky, LinkedIn and Facebook from the admin, and track where each one went."
   }
 }

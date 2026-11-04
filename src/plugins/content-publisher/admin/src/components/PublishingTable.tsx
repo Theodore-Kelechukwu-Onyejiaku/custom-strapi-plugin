@@ -6,6 +6,7 @@ import { Empty, Row } from './table/tableParts';
 import { buildHeaders, FILTER_OPTIONS } from './table/tableHeaders';
 import { usePostsQuery } from '../hooks/usePostsQuery';
 import { usePublishTargets } from '../hooks/usePublishTargets';
+import { usePostPermissions } from '../hooks/usePostPermissions';
 
 // Built on Strapi's own Table, Filters, SearchInput and Pagination rather than hand-rolled
 // equivalents. They keep their state in the URL, so sorting, filtering, the search term and
@@ -13,6 +14,8 @@ import { usePublishTargets } from '../hooks/usePublishTargets';
 const PublishingTable = () => {
   const { platforms } = usePublishTargets();
   const { posts, pagination, isLoading, refresh, remove } = usePostsQuery();
+  // checked once for the whole table rather than once per row
+  const { canPublish, canDelete } = usePostPermissions();
 
   const headers = buildHeaders(platforms);
 
@@ -43,7 +46,8 @@ const PublishingTable = () => {
                   post={post}
                   platforms={platforms}
                   onChanged={refresh}
-                  onDelete={remove}
+                  onDelete={canDelete ? remove : undefined}
+                  canPublish={canPublish}
                 />
               </Row>
             ))}

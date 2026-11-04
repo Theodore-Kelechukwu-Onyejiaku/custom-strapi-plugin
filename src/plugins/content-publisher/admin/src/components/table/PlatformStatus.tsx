@@ -29,9 +29,9 @@ const PlatformStatus = ({ post, platforms, busy }: any) => {
       <Flex gap={1} alignItems="center" wrap="wrap">
         {platforms.map((target: PlatformTarget) => {
           const link = post[target.linkField];
-          const { Icon, label, type } = target;
+          const { Icon, label, key } = target;
 
-          if (busy === type) return <Loader key={type} small />;
+          if (busy === key) return <Loader key={key} small />;
 
           // faded rather than hidden, so the row shows what is still outstanding
           const icon = (
@@ -41,7 +41,7 @@ const PlatformStatus = ({ post, platforms, busy }: any) => {
           );
 
           return (
-            <Tooltip key={type} label={link ? `Open on ${label}` : `Not published to ${label}`}>
+            <Tooltip key={key}label={link ? `Open on ${label}` : `Not published to ${label}`}>
               {link ? (
                 <Box tag="a" href={link} target="_blank" rel="noreferrer">
                   {icon}

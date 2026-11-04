@@ -5,6 +5,6 @@ import connection from './connection';
 
 export default {
   service,
-  setting: setting,
+  setting,
   connection,
 };

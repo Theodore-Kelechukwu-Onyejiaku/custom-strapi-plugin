@@ -1,16 +1,16 @@
 // services/list-query.ts
 //
 // Turns the admin table's query string into document-service arguments. Only known columns
-// are honoured: these routes are unauthenticated (PROGRESS.md item 10), so a stray
-// `filters[createdBy][id]` must not become a database query.
+// are honoured, so a stray `filters[createdBy][id]` never becomes a database query.
 
 const DEFAULT_PAGE_SIZE = 10;
 const MAX_PAGE_SIZE = 100;
 const DEFAULT_SORT = 'entryUpdatedAt:desc';
 
+import { LINK_FIELDS } from './publish-config';
+
 const SORTABLE = ['title', 'contentType', 'entryUpdatedAt'];
-const LINKS = ['mediumLink', 'devToLink', 'blueskyLink', 'linkedInLink', 'facebookLink'];
-const FILTERABLE = ['title', 'contentType', ...LINKS];
+const FILTERABLE = ['title', 'contentType', ...Object.values(LINK_FIELDS)];
 
 const toInt = (value: unknown, fallback: number) => {
   const parsed = Number.parseInt(String(value), 10);

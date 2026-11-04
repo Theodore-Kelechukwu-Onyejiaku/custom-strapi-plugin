@@ -6,7 +6,15 @@
 import type { FieldMap } from '../platforms';
 
 export const POST_UID = 'plugin::content-publisher.post';
-export const POSTS_PER_PAGE = 5;
+
+// platform key -> the tracking record field that holds its published URL
+export const LINK_FIELDS: Record<string, string> = {
+  devTo: 'devToLink',
+  medium: 'mediumLink',
+  bluesky: 'blueskyLink',
+  linkedIn: 'linkedInLink',
+  facebook: 'facebookLink',
+};
 
 // Populates every relation and media attribute one level down when an entry is fetched for
 // publishing. Broad on purpose: which attributes matter is decided by the editor's mapping,

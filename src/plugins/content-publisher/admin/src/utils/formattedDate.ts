@@ -1,14 +1,9 @@
-const formattedDate = (isoDate: Date) => {
-  // Create a Date object from the ISO string
-  const date = new Date(isoDate);
-
-  const result = date.toLocaleDateString('en-US', {
+// "2026-10-25T…" -> "October 25, 2026"
+const formattedDate = (isoDate: Date) =>
+  new Date(isoDate).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
-
-  return result;
-};
 
 export default formattedDate;

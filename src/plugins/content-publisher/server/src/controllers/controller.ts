@@ -1,3 +1,8 @@
+// controllers/controller.ts
+//
+// The publishing table's HTTP layer. Each handler only reads the request and calls the
+// posts service, the same service the MCP tools use.
+
 import type { Core } from '@strapi/strapi';
 
 const service = (strapi: Core.Strapi) => strapi.plugin('content-publisher').service('service');
@@ -8,44 +13,20 @@ const controller = ({ strapi }: { strapi: Core.Strapi }) => ({
     ctx.body = await service(strapi).getPosts(ctx.query);
   },
 
-  // publish a blog post to dev.to
-  async publishPostToDevTo(ctx) {
-    ctx.body = await service(strapi).publishPostToDevTo(ctx.request.body);
+  // publish a post to one platform: POST /posts/:id/publish/:platform
+  async publish(ctx) {
+    const { id, platform } = ctx.params;
+    ctx.body = await service(strapi).publish(platform, id);
   },
 
-  // publish a blog post to medium
-  async publishPostToMedium(ctx) {
-    ctx.body = await service(strapi).publishPostToMedium(ctx.request.body);
-  },
-
-  // publish a blog post to bluesky
-  async publishPostToBluesky(ctx) {
-    ctx.body = await service(strapi).publishPostToBluesky(ctx.request.body);
-  },
-
-  // publish a blog post to linkedin
-  async publishPostToLinkedIn(ctx) {
-    ctx.body = await service(strapi).publishPostToLinkedIn(ctx.request.body);
-  },
-
-  // publish a blog post to a facebook page
-  async publishPostToFacebook(ctx) {
-    ctx.body = await service(strapi).publishPostToFacebook(ctx.request.body);
-  },
-
-  // get a single post
+  // the tracking post for one entry: GET /posts/by-entry?contentType=…&entryId=…
   async getSinglePost(ctx) {
     ctx.body = await service(strapi).getSinglePost(ctx.request.query);
   },
 
-  // search for a post
-  async getSearchQuery(ctx) {
-    ctx.body = await service(strapi).getSearchQuery(ctx.request.query);
-  },
-
-  // delete a post
+  // delete a post: DELETE /posts/:id
   async deletePost(ctx) {
-    ctx.body = await service(strapi).deletePost(ctx.request.query);
+    ctx.body = await service(strapi).deletePost({ postId: ctx.params.id });
   },
 });
 

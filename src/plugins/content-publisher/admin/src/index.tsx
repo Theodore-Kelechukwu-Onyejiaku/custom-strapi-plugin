@@ -1,7 +1,7 @@
 import { PLUGIN_ID } from './pluginId';
 import { Initializer } from './components/Initializer';
 import { PluginIcon } from './components/PluginIcon';
-import InjectedComponent from './components/InjectedComponent';
+import EntryPublishPanel from './components/EntryPublishPanel';
 import pluginPermissions from './permissions';
 
 export default {
@@ -26,18 +26,13 @@ export default {
       initializer: Initializer,
       isReady: false,
       name: PLUGIN_ID,
-      injectionZones: {
-        editView: {
-          'right-links': [],
-        },
-      },
     });
   },
 
   async bootstrap(app: any) {
     app.getPlugin('content-manager').injectComponent('editView', 'right-links', {
       name: 'content-publisher',
-      Component: () => <InjectedComponent />,
+      Component: EntryPublishPanel,
     });
   },
 

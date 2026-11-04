@@ -10,7 +10,7 @@ import { getPlatform } from '../platforms';
 import { resolveFields } from './resolve-fields';
 import { secretsFor } from './publish-secrets';
 import { getSettings } from './settings-store';
-import { POST_UID } from './publish-config';
+import { LINK_FIELDS, POST_UID } from './publish-config';
 import { resolveSource } from './publish-source';
 
 const { ApplicationError } = errors;
@@ -24,7 +24,6 @@ export const publishEntry = async (
   strapi: Core.Strapi,
   post: any,
   platformKey: string,
-  linkField: 'devToLink' | 'mediumLink' | 'blueskyLink' | 'linkedInLink' | 'facebookLink',
   send: Send
 ) => {
   const platform = getPlatform(platformKey);
@@ -48,7 +47,7 @@ export const publishEntry = async (
 
   await strapi.documents(POST_UID).update({
     documentId: post.documentId,
-    data: { [linkField]: url },
+    data: { [LINK_FIELDS[platformKey]]: url },
   });
 
   return { url };

@@ -32,16 +32,8 @@ export const onEntryChanged = async (strapi: Core.Strapi, uid: string, entry: an
     return;
   }
 
-  await strapi.documents(POST_UID).create({
-    data: asData({
-      ...snapshot,
-      mediumLink: null,
-      devToLink: null,
-      blueskyLink: null,
-      linkedInLink: null,
-      facebookLink: null,
-    }),
-  });
+  // the link fields start empty, so only the snapshot is written
+  await strapi.documents(POST_UID).create({ data: asData(snapshot) });
 };
 
 export const onEntryRemoved = async (strapi: Core.Strapi, uid: string, documentId?: string) => {

@@ -6,5 +6,6 @@
 import posts from './posts';
 import settings from './settings';
 import connections from './connections';
+import chat from './chat';
 
-export default [...posts, ...settings, ...connections];
+export default [...posts, ...settings, ...connections, ...chat];

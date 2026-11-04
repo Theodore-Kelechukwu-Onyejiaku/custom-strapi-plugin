@@ -2,11 +2,20 @@
 
 # Content Publisher
 
-Publish Strapi content to **Dev.to**, **Medium** and **Bluesky** from the admin panel, and
-keep track of where each entry ended up.
+Publish Strapi content to **Dev.to**, **Medium**, **Bluesky**, **LinkedIn** and
+**Facebook** from the admin panel, and keep track of where each entry ended up.
 
 You choose which collection types are publishable, map each platform's fields onto your own
 attributes, and publish from either the plugin's page or the Content Manager's edit view.
+
+The plugin is free and every feature works without a paid service. The optional AI chat
+uses your own Anthropic API key; nothing else needs it.
+
+## Prerequisites
+
+- Strapi **5.54 or later** (built and tested on 5.60)
+- Node.js **20 or 22**
+- An account on each platform you want to publish to, with an API key or app
 
 ## Install
 
@@ -95,23 +104,72 @@ an entry back to draft hides it without losing the record of where it was alread
 
 ## Permissions
 
-Three actions, under *Settings → Roles*:
+Five actions, under *Settings → Roles*:
 
 | Action | Grants |
 | --- | --- |
-| `Access the publishing table` | the menu link and the publishing table |
+| `Access the publishing table` | the menu link, the publishing table, the edit-view panel and the chat (read-only) |
+| `Publish posts to platforms` | publishing from the table, the edit view and the chat; needs the table permission too |
+| `Delete posts from the publishing table` | deleting tracking records; needs the table permission too |
 | `Access the publishing settings` | viewing the settings page |
 | `Change the publishing settings` | saving mappings and credentials |
+
+A role with only *Access the publishing table* sees where everything is published but
+cannot publish or delete.
+
+The chat follows each editor's role too. It can only look up content types the role can
+read in the Content Manager, and only use the plugin tools ticked for that role under
+**AI tools**. Publishing from the chat needs both *Publish posts to platforms* and
+*Publish a post*. Existing roles need the AI tools ticked before the chat can use them.
+
+Under **AI tools**, one action per MCP tool, so an admin token or role can be given each
+tool on its own (for example the two list tools without publishing):
+
+| Action | Tool |
+| --- | --- |
+| `List posts` | `content_publisher_list_posts` |
+| `List platforms` | `content_publisher_list_platforms` |
+| `Publish a post` | `content_publisher_publish_post` |
 
 Settings are kept separate from the table on purpose: seeing what you can publish should not
 imply seeing where it goes or which credentials exist. New actions are not granted to existing
 roles automatically — Super Admin has them, everyone else needs them ticked.
 
+## Public API (read-only)
+
+Two content-api routes let a frontend show where an entry was published, for example
+"Also on Dev.to / Medium" links under a blog post, or a canonical link.
+
+| Route | Returns |
+| --- | --- |
+| `GET /api/content-publisher/posts?_q=&page=&pageSize=` | Published entries and their platform links, paginated (max 100 per page) |
+| `GET /api/content-publisher/posts/by-entry?contentType=api::blog.blog&entryId=<documentId>` | One entry's links, or 404 if it is not published |
+
+```json
+{
+  "data": {
+    "title": "Understanding Strapi 5's Document Service API",
+    "contentType": "api::blog.blog",
+    "entryId": "x8k2…",
+    "published": { "devTo": "https://dev.to/…", "medium": null, "bluesky": "https://bsky.app/…", "linkedIn": null, "facebook": null }
+  }
+}
+```
+
+They are **off until you grant them**: *Settings → Users & Permissions → Roles → Public →
+Content-publisher → Posts*, tick `find` and/or `findByEntry`. Or tick them on an API token
+instead to keep them private to your frontend's server.
+
+Only published entries and their links are returned; drafts and internal fields never are.
+Publishing, deleting and settings stay admin-only, with no content-api route.
+
 ## Adding a platform
 
 1. Describe the API's fields in `server/src/platforms/<name>.ts`.
 2. Add it to `PLATFORMS` in `server/src/platforms/index.ts`.
-3. Write the request in `server/src/services/publishers/`.
+3. Write the request in `server/src/services/publishers/` and add it to `senders` in
+   `server/src/services/publish-post.ts`. The publish route, controller and MCP tool take
+   any platform key, so they need no change.
 
 The settings page builds itself from that definition, so no admin code changes.
 
@@ -123,6 +181,37 @@ The settings page builds itself from that definition, so no admin code changes.
 - **Bluesky posts are capped** at 300 graphemes and 3,000 UTF-8 bytes. Longer text is trimmed
   on a grapheme boundary, and a link card points back at the original.
 - **One tracked entry per document.** Localised entries are not yet handled separately.
+
+## Publishing assistant (optional chat)
+
+The chat is optional. Without the variables below the rest of the plugin works the same.
+
+A floating chat button on the plugin's pages lets editors ask what has been published where,
+and publish posts by asking. Every publish waits for the editor to click **Publish** in the
+chat. It runs on the Vercel AI SDK and Claude, and works through Strapi's built-in MCP
+server, so it uses the same publish logic as the table.
+
+Add to your project's `.env` and restart Strapi:
+
+```bash
+ANTHROPIC_API_KEY=...   # from console.anthropic.com
+STRAPI_MCP_TOKEN=...    # Settings → Administration Panel → Admin Tokens
+# ANTHROPIC_MODEL=claude-sonnet-5-5   # optional; the default model, otherwise claude-haiku-4-5
+```
+
+MCP must be on in `config/server.ts` (`mcp: { enabled: true }`). Give the admin token the
+three **AI tools** permissions under Content Publisher and Content Manager **read** on your
+publishable types.
+
+`STRAPI_MCP_TOKEN` stays in your own `.env`. The plugin only sends it to your Strapi's own
+`/mcp` endpoint, never to Anthropic or any other service.
+
+## Reporting issues
+
+Found a bug or want a feature? Open an issue at
+[github.com/Theodore-Kelechukwu-Onyejiaku/custom-strapi-plugin/issues](https://github.com/Theodore-Kelechukwu-Onyejiaku/custom-strapi-plugin/issues).
+Include your Strapi and Node.js versions, the platform involved, and the error message
+shown in the admin or the Strapi logs. Please don't paste API keys or tokens.
 
 ## License
 

@@ -1,19 +1,18 @@
 // services/service.ts
 //
-// Thin wiring. The reads live in post-queries.ts, the shared publishing path in
-// publish.ts, and each platform's request in publishers/.
+// The plugin's posts service. Controllers, MCP tools and the chat all call these methods
+// (strapi.plugin('content-publisher').service('service')) rather than querying or
+// publishing themselves, so each rule lives in exactly one place.
+//
+// Thin wiring: the reads live in post-queries.ts, publishing in publish-post.ts.
 
 import type { Core } from '@strapi/strapi';
 
 import * as queries from './post-queries';
-import { publishEntry } from './publish';
-import { sendToDevTo } from './publishers/devto';
-import { sendToMedium } from './publishers/medium';
-import { sendToBluesky } from './publishers/bluesky';
-import { sendToLinkedIn } from './publishers/linkedin';
-import { sendToFacebook } from './publishers/facebook';
+import { publishPost } from './publish-post';
 
 const service = ({ strapi }: { strapi: Core.Strapi }) => ({
+  // the publishing table, and the MCP list tool (search + limit only)
   async getPosts(query: any) {
     return queries.getPosts(strapi, query);
   },
@@ -22,32 +21,13 @@ const service = ({ strapi }: { strapi: Core.Strapi }) => ({
     return queries.getSinglePost(strapi, query);
   },
 
-  async getSearchQuery(query: { search: string; start: number }) {
-    return queries.getSearchQuery(strapi, query);
-  },
-
   async deletePost(query: { postId: string }) {
     return queries.deletePost(strapi, query);
   },
 
-  async publishPostToDevTo(post: any) {
-    return publishEntry(strapi, post, 'devTo', 'devToLink', sendToDevTo);
-  },
-
-  async publishPostToMedium(post: any) {
-    return publishEntry(strapi, post, 'medium', 'mediumLink', sendToMedium);
-  },
-
-  async publishPostToBluesky(post: any) {
-    return publishEntry(strapi, post, 'bluesky', 'blueskyLink', sendToBluesky(strapi));
-  },
-
-  async publishPostToLinkedIn(post: any) {
-    return publishEntry(strapi, post, 'linkedIn', 'linkedInLink', sendToLinkedIn);
-  },
-
-  async publishPostToFacebook(post: any) {
-    return publishEntry(strapi, post, 'facebook', 'facebookLink', sendToFacebook);
+  // one method for every platform; platformKey is devTo, medium, bluesky, linkedIn or facebook
+  async publish(platformKey: string, postId: string) {
+    return publishPost(strapi, platformKey, postId);
   },
 });
 

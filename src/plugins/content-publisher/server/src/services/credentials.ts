@@ -36,3 +36,7 @@ export const resolveSecrets = (platform: Platform) => {
   }
   return secrets;
 };
+
+// The env var names a platform needs that are not set.
+export const missingEnvVars = (platform: Platform, secrets = resolveSecrets(platform)) =>
+  platform.envVars.filter((name) => !secrets[name]);

@@ -5,16 +5,7 @@
 // token. The one-time `state` (services/oauth/state.ts) is what guards it instead.
 
 import { SETTINGS_UPDATE } from '../permissions';
-
-const middlewares = ['plugin::content-publisher.plugin-errors'];
-
-const can = (action: string) => ({
-  policies: [
-    'admin::isAuthenticatedAdmin',
-    { name: 'admin::hasPermissions', config: { actions: [action] } },
-  ],
-  middlewares,
-});
+import { can, middlewares } from './can';
 
 export default [
   {

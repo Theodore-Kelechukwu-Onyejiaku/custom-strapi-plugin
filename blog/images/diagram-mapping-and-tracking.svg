@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <style>
+    text { font-family: Helvetica, Arial, sans-serif; fill: #32324D; }
+    .title { font-size: 34px; font-weight: 700; fill: #212134; }
+    .sub { font-size: 19px; fill: #666687; }
+    .group { font-size: 18px; font-weight: 700; letter-spacing: 1px; fill: #666687; }
+    .name { font-size: 22px; font-weight: 700; fill: #212134; }
+    .uid { font-size: 16px; fill: #8E8EA9; font-family: Menlo, monospace; }
+    .attr { font-size: 18px; font-family: Menlo, monospace; fill: #212134; }
+    .type { font-size: 15px; fill: #8E8EA9; }
+    .light { fill: #FFFFFF; }
+    .lightattr { font-size: 18px; font-family: Menlo, monospace; fill: #FFFFFF; }
+    .lightnote { font-size: 15px; fill: #DCDCFF; }
+    .note { font-size: 16px; fill: #666687; }
+    .card { fill: #FFFFFF; stroke: #DCDCE4; stroke-width: 2; }
+    .blog { stroke: #4945FF; stroke-width: 2.5; fill: none; }
+    .art { stroke: #D9822F; stroke-width: 2.5; fill: none; stroke-dasharray: 8 6; }
+    .line { stroke: #8E8EA9; stroke-width: 2.5; fill: none; }
+  </style>
+  <defs>
+    <marker id="p" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#4945FF"/></marker>
+    <marker id="o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#D9822F"/></marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#8E8EA9"/></marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="#F6F6F9"/>
+  <text x="40" y="62" class="title">Your content model stays yours</text>
+  <text x="40" y="94" class="sub">Editors map each platform's fields onto their own attributes, per content type. A small record remembers where each entry went.</text>
+
+  <text x="40" y="150" class="group">YOUR COLLECTION TYPES</text>
+
+  <!-- Blog -->
+  <rect x="40" y="165" width="420" height="330" rx="14" class="card" stroke="#4945FF"/>
+  <text x="60" y="203" class="name">Blog</text>
+  <text x="440" y="203" class="uid" text-anchor="end">api::blog.blog</text>
+  <line x1="40" y1="220" x2="460" y2="220" stroke="#DCDCE4" stroke-width="2"/>
+  <text x="60" y="262" class="attr">title</text><text x="440" y="262" class="type" text-anchor="end">string</text>
+  <text x="60" y="312" class="attr">content</text><text x="440" y="312" class="type" text-anchor="end">richtext</text>
+  <text x="60" y="362" class="attr">canonicalUrl</text><text x="440" y="362" class="type" text-anchor="end">string</text>
+  <text x="60" y="412" class="attr">postBanner</text><text x="440" y="412" class="type" text-anchor="end">media</text>
+  <text x="60" y="462" class="attr">tags → Tag.blogTag</text><text x="440" y="462" class="type" text-anchor="end">relation</text>
+
+  <!-- Article -->
+  <rect x="40" y="540" width="420" height="230" rx="14" class="card" stroke="#D9822F"/>
+  <text x="60" y="578" class="name">Article</text>
+  <text x="440" y="578" class="uid" text-anchor="end">api::article.article</text>
+  <line x1="40" y1="595" x2="460" y2="595" stroke="#DCDCE4" stroke-width="2"/>
+  <text x="60" y="637" class="attr">headline</text><text x="440" y="637" class="type" text-anchor="end">string</text>
+  <text x="60" y="687" class="attr">section</text><text x="440" y="687" class="type" text-anchor="end">richtext</text>
+  <text x="60" y="737" class="attr">cover</text><text x="440" y="737" class="type" text-anchor="end">media</text>
+
+  <!-- Dev.to fields -->
+  <text x="680" y="150" class="group">DEV.TO FIELDS</text>
+  <rect x="680" y="165" width="360" height="330" rx="14" fill="#212134"/>
+  <text x="700" y="203" class="name light">Dev.to</text>
+  <text x="1020" y="203" class="lightnote" text-anchor="end">platforms/devto.ts</text>
+  <line x1="680" y1="220" x2="1040" y2="220" stroke="#4A4A6A" stroke-width="2"/>
+  <text x="700" y="262" class="lightattr">title *</text>
+  <text x="700" y="312" class="lightattr">body_markdown *</text>
+  <text x="700" y="362" class="lightattr">canonical_url</text>
+  <text x="700" y="412" class="lightattr">main_image</text>
+  <text x="700" y="462" class="lightattr">tags</text>
+
+  <!-- Blog mapping -->
+  <path d="M460 256 L676 256" class="blog" marker-end="url(#p)"/>
+  <path d="M460 306 L676 306" class="blog" marker-end="url(#p)"/>
+  <path d="M460 356 L676 356" class="blog" marker-end="url(#p)"/>
+  <path d="M460 406 L676 406" class="blog" marker-end="url(#p)"/>
+  <path d="M460 456 L676 456" class="blog" marker-end="url(#p)"/>
+  <!-- Article mapping -->
+  <path d="M460 631 C 580 631, 560 270, 676 266" class="art" marker-end="url(#o)"/>
+  <path d="M460 681 C 590 681, 570 320, 676 316" class="art" marker-end="url(#o)"/>
+  <path d="M460 731 C 600 731, 580 420, 676 416" class="art" marker-end="url(#o)"/>
+
+  <text x="680" y="545" class="note">* required. Each dropdown only offers attributes of a type</text>
+  <text x="680" y="570" class="note">the field accepts, so a cover image never lists a richtext.</text>
+  <text x="680" y="620" class="note">Media becomes an absolute URL. A relation becomes a list,</text>
+  <text x="680" y="645" class="note">read from the field you pick on the related type (blogTag).</text>
+
+  <!-- Tracking record -->
+  <text x="1140" y="150" class="group">TRACKING RECORD</text>
+  <rect x="1140" y="165" width="420" height="605" rx="14" class="card"/>
+  <text x="1160" y="203" class="name">One per entry</text>
+  <text x="1540" y="203" class="uid" text-anchor="end">content-publisher.post</text>
+  <line x1="1140" y1="220" x2="1560" y2="220" stroke="#DCDCE4" stroke-width="2"/>
+  <text x="1160" y="262" class="attr">contentType</text><text x="1540" y="262" class="type" text-anchor="end">api::blog.blog</text>
+  <text x="1160" y="304" class="attr">entryId</text><text x="1540" y="304" class="type" text-anchor="end">documentId</text>
+  <text x="1160" y="346" class="attr">title</text><text x="1540" y="346" class="type" text-anchor="end">snapshot</text>
+  <text x="1160" y="388" class="attr">entryUpdatedAt</text><text x="1540" y="388" class="type" text-anchor="end">snapshot</text>
+  <text x="1160" y="430" class="attr">entryPublished</text><text x="1540" y="430" class="type" text-anchor="end">true / false</text>
+  <line x1="1160" y1="455" x2="1540" y2="455" stroke="#EAEAEF" stroke-width="2"/>
+  <text x="1160" y="497" class="attr">devToLink</text><text x="1540" y="497" class="type" text-anchor="end" style="fill:#328048">https://dev.to/…</text>
+  <text x="1160" y="539" class="attr">mediumLink</text><text x="1540" y="539" class="type" text-anchor="end">null</text>
+  <text x="1160" y="581" class="attr">blueskyLink</text><text x="1540" y="581" class="type" text-anchor="end" style="fill:#328048">https://bsky.app/…</text>
+  <text x="1160" y="623" class="attr">linkedInLink</text><text x="1540" y="623" class="type" text-anchor="end">null</text>
+  <text x="1160" y="665" class="attr">facebookLink</text><text x="1540" y="665" class="type" text-anchor="end">null</text>
+  <text x="1160" y="720" class="note">Lifecycle hooks keep the snapshot fresh.</text>
+  <text x="1160" y="745" class="note">A publish fills in one link.</text>
+
+  <path d="M1040 330 L1136 330" class="line" marker-end="url(#g)"/>
+  <text x="1088" y="318" class="note" text-anchor="middle">URL</text>
+
+  <rect x="40" y="810" width="1520" height="60" rx="12" fill="#EEF0FF"/>
+  <text x="60" y="848" class="note" style="fill:#271FE0;font-size:18px">Mappings are saved per platform and per content type, in Strapi's core store, and validated before they are saved.</text>
+</svg>

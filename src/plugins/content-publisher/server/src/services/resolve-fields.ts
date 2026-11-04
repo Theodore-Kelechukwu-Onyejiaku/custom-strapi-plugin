@@ -13,7 +13,7 @@ import type { FieldMap, Platform, PlatformField } from '../platforms';
  * relative ("/uploads/x.png"), which dev.to and Medium cannot resolve, so prefix the
  * server's absolute URL. Providers like S3 and Cloudinary already return absolute URLs.
  */
-export const mediaUrl = (media: any, strapi: Core.Strapi): string | null => {
+const mediaUrl =(media: any, strapi: Core.Strapi): string | null => {
   const url = media?.url;
   if (!url) return null;
   if (/^https?:\/\//i.test(url)) return url;

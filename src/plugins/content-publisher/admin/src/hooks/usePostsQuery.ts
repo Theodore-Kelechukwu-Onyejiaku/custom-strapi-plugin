@@ -10,17 +10,14 @@ import { useFetchClient, useQueryParams } from '@strapi/strapi/admin';
 type Pagination = { page: number; pageSize: number; total: number; pageCount: number };
 type PostsResponse = { posts: any[]; pagination: Pagination };
 
+const EMPTY_PAGINATION: Pagination = { page: 1, pageSize: 10, total: 0, pageCount: 1 };
+
 export const usePostsQuery = () => {
   const { get, del } = useFetchClient();
   const [{ rawQuery }] = useQueryParams();
 
   const [posts, setPosts] = useState<any[]>([]);
-  const [pagination, setPagination] = useState<Pagination>({
-    page: 1,
-    pageSize: 10,
-    total: 0,
-    pageCount: 1,
-  });
+  const [pagination, setPagination] = useState<Pagination>(EMPTY_PAGINATION);
   // starts true so the empty state never flashes before the first fetch resolves
   const [isLoading, setIsLoading] = useState(true);
 
@@ -30,7 +27,7 @@ export const usePostsQuery = () => {
     try {
       const { data } = await get<PostsResponse>(`/content-publisher/posts${rawQuery}`);
       setPosts(data.posts ?? []);
-      setPagination(data.pagination ?? { page: 1, pageSize: 10, total: 0, pageCount: 1 });
+      setPagination(data.pagination ?? EMPTY_PAGINATION);
     } catch (error) {
       setPosts([]);
     } finally {
@@ -44,7 +41,7 @@ export const usePostsQuery = () => {
   }, [load]);
 
   const remove = async (documentId: string) => {
-    await del(`/content-publisher/delete-post?postId=${documentId}`);
+    await del(`/content-publisher/posts/${documentId}`);
     await load();
   };
 

@@ -40,6 +40,17 @@ Strapi gives you many possible deployment options for your project including [St
 yarn strapi deploy
 ```
 
+### Before deploying this project
+
+These defaults are fine locally but not in production. All are set from `.env` (see `.env.example`).
+
+- **Database:** SQLite is used when `DATABASE_CLIENT` is unset. Set `postgres` or `mysql` and the `DATABASE_*` connection variables.
+- **CORS:** set `CORS_ORIGIN` to your frontend's domain(s), comma-separated. Unset allows any origin.
+- **Media uploads:** files are stored on the local disk (`public/uploads`), which most hosts wipe on every deploy. Add an upload provider (S3/R2 or Cloudinary) in `config/plugins.ts` first.
+- **MCP:** Strapi's `/mcp` server is on by default. Set `MCP_ENABLED=false` where you don't want it.
+- **Roles:** review *Settings → Users & Permissions → Roles → Public / Authenticated* so they expose only what your frontend needs.
+- **Admin tokens:** give MCP clients only the Content Publisher **AI tools** permissions they need.
+
 ## 📚 Learn more
 
 - [Resource center](https://strapi.io/resource-center) - Strapi resource center.

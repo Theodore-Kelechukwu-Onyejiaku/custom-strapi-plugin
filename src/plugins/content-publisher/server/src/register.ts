@@ -11,6 +11,7 @@ import type { Core } from '@strapi/strapi';
 import { POST_UID } from './services/publish-config';
 import { getSettings } from './services/settings-store';
 import { onEntryChanged, onEntryRemoved } from './services/tracking-sync';
+import { registerMcpTools } from './mcp';
 
 const register = ({ strapi }: { strapi: Core.Strapi }) => {
   // also guards against reacting to our own writes, which would recurse
@@ -51,6 +52,9 @@ const register = ({ strapi }: { strapi: Core.Strapi }) => {
       }
     },
   });
+
+  // the chat (and any other MCP client) reaches the publish services through these
+  registerMcpTools(strapi);
 };
 
 export default register;

@@ -25,9 +25,6 @@ export type Platform = {
   // env vars needed to publish. Not editable from the admin panel; the settings page only
   // reports whether they are present.
   envVars: string[];
-  // Values sent with every request that are not sourced from a content type, so they are
-  // shown read-only in the settings page rather than as dropdowns.
-  fixedOptions?: Record<string, unknown>;
   // Set for sign-in (OAuth) platforms: `envVars` is then the app's id and secret, from .env.
   oauth?: { scopes: string[] };
 };

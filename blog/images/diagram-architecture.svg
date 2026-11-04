@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <style>
+    text { font-family: Helvetica, Arial, sans-serif; fill: #32324D; }
+    .title { font-size: 34px; font-weight: 700; fill: #212134; }
+    .sub { font-size: 19px; fill: #666687; }
+    .group { font-size: 18px; font-weight: 700; letter-spacing: 1px; fill: #666687; }
+    .name { font-size: 22px; font-weight: 700; fill: #212134; }
+    .note { font-size: 16px; fill: #666687; }
+    .light { fill: #FFFFFF; }
+    .lightnote { font-size: 16px; fill: #DCDCFF; }
+    .line { stroke: #8E8EA9; stroke-width: 2.5; fill: none; }
+    .accent { stroke: #4945FF; stroke-width: 3; fill: none; }
+    .card { fill: #FFFFFF; stroke: #DCDCE4; stroke-width: 2; }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8E8EA9"/>
+    </marker>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#4945FF"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="1000" fill="#F6F6F9"/>
+  <text x="40" y="62" class="title">How Content Publisher fits together</text>
+  <text x="40" y="94" class="sub">Every way in — buttons or chat — ends at the same publish path.</text>
+
+  <!-- Editor -->
+  <rect x="40" y="380" width="230" height="110" rx="14" fill="#212134"/>
+  <text x="155" y="428" class="name light" text-anchor="middle">Editor</text>
+  <text x="155" y="458" class="lightnote" text-anchor="middle">signed in to the admin</text>
+
+  <!-- Admin panel group -->
+  <rect x="330" y="130" width="380" height="590" rx="18" fill="#F0F0FF" stroke="#4945FF" stroke-width="2" stroke-dasharray="8 6"/>
+  <text x="350" y="162" class="group">STRAPI ADMIN PANEL</text>
+
+  <rect x="355" y="180" width="330" height="90" rx="12" class="card"/>
+  <text x="375" y="217" class="name">Publishing table</text>
+  <text x="375" y="246" class="note">Plugin page · search, filters, Publish menu</text>
+
+  <rect x="355" y="295" width="330" height="90" rx="12" class="card"/>
+  <text x="375" y="332" class="name">Content Manager panel</text>
+  <text x="375" y="361" class="note">Inside any entry's edit view</text>
+
+  <rect x="355" y="410" width="330" height="90" rx="12" class="card"/>
+  <text x="375" y="447" class="name">Settings page</text>
+  <text x="375" y="476" class="note">Types · field mapping · Connect buttons</text>
+
+  <rect x="355" y="580" width="330" height="110" rx="12" class="card" stroke="#4945FF"/>
+  <text x="375" y="620" class="name">Chat window</text>
+  <text x="375" y="649" class="note">useChat · streamed replies</text>
+  <text x="375" y="674" class="note">approval cards for every publish</text>
+
+  <!-- Editor arrows -->
+  <path d="M270 410 L352 225" class="line" marker-end="url(#a)"/>
+  <path d="M270 425 L352 340" class="line" marker-end="url(#a)"/>
+  <path d="M270 440 L352 455" class="line" marker-end="url(#a)"/>
+  <path d="M270 460 L352 630" class="line" marker-end="url(#a)"/>
+
+  <!-- Server group -->
+  <rect x="760" y="130" width="480" height="690" rx="18" fill="#FFFFFF" stroke="#212134" stroke-width="2"/>
+  <text x="780" y="162" class="group">STRAPI SERVER · THE PLUGIN</text>
+
+  <!-- routes band -->
+  <rect x="780" y="180" width="70" height="510" rx="10" fill="#EAEAEF"/>
+  <text x="822" y="435" class="note" text-anchor="middle" transform="rotate(-90 822 435)" style="font-size:18px;font-weight:700;fill:#4A4A6A">Admin routes · RBAC · error middleware</text>
+
+  <!-- admin -> routes -->
+  <path d="M685 225 L776 225" class="line" marker-end="url(#a)"/>
+  <path d="M685 340 L776 340" class="line" marker-end="url(#a)"/>
+  <path d="M685 455 L776 455" class="line" marker-end="url(#a)"/>
+  <path d="M685 635 L776 635" class="accent" marker-end="url(#b)"/>
+
+  <!-- publish path -->
+  <rect x="880" y="180" width="340" height="160" rx="14" fill="#4945FF"/>
+  <text x="900" y="222" class="name light">One publish path</text>
+  <text x="900" y="252" class="lightnote">services/publish.ts</text>
+  <text x="900" y="288" class="lightnote">on? → credentials → entry →</text>
+  <text x="900" y="312" class="lightnote">mapping → send → record URL</text>
+  <path d="M850 260 L876 260" class="line" marker-end="url(#a)"/>
+
+  <!-- settings service -->
+  <rect x="880" y="380" width="230" height="110" rx="12" class="card"/>
+  <text x="900" y="418" class="name">Settings</text>
+  <text x="900" y="446" class="note">validated, then saved</text>
+  <text x="900" y="470" class="note">OAuth sign-in flow</text>
+  <path d="M850 435 L876 435" class="line" marker-end="url(#a)"/>
+
+  <!-- chat agent -->
+  <rect x="880" y="580" width="230" height="110" rx="12" class="card" stroke="#4945FF"/>
+  <text x="900" y="618" class="name">/chat agent</text>
+  <text x="900" y="646" class="note">AI SDK ToolLoopAgent</text>
+  <text x="900" y="670" class="note">pauses for approval</text>
+  <path d="M850 635 L876 635" class="accent" marker-end="url(#b)"/>
+
+  <!-- MCP server -->
+  <rect x="880" y="725" width="340" height="80" rx="12" fill="#EEF0FF" stroke="#4945FF" stroke-width="2"/>
+  <text x="900" y="760" class="name">Strapi's /mcp server</text>
+  <text x="900" y="787" class="note">plugin tools + read-only content tools</text>
+  <path d="M995 690 L995 721" class="accent" marker-end="url(#b)"/>
+
+  <!-- MCP -> publish path -->
+  <path d="M1170 725 L1170 344" class="accent" stroke-dasharray="9 7" marker-end="url(#b)"/>
+  <text x="1198" y="470" class="note" transform="rotate(-90 1198 470)" text-anchor="middle" style="fill:#4945FF;font-weight:700">same publish path</text>
+
+  <!-- Platforms -->
+  <text x="1290" y="162" class="group">PLATFORMS</text>
+  <g>
+    <rect x="1290" y="180" width="270" height="54" rx="10" class="card"/>
+    <text x="1310" y="215" class="name">Dev.to</text>
+    <rect x="1290" y="246" width="270" height="54" rx="10" class="card"/>
+    <text x="1310" y="281" class="name">Medium</text>
+    <rect x="1290" y="312" width="270" height="54" rx="10" class="card"/>
+    <text x="1310" y="347" class="name">Bluesky</text>
+    <rect x="1290" y="378" width="270" height="54" rx="10" class="card"/>
+    <text x="1310" y="413" class="name">LinkedIn</text>
+    <text x="1542" y="413" class="note" text-anchor="end">sign-in</text>
+    <rect x="1290" y="444" width="270" height="54" rx="10" class="card"/>
+    <text x="1310" y="479" class="name">Facebook Page</text>
+    <text x="1542" y="479" class="note" text-anchor="end">sign-in</text>
+  </g>
+  <path d="M1220 230 L1286 207" class="line" marker-end="url(#a)"/>
+  <path d="M1220 245 L1286 273" class="line" marker-end="url(#a)"/>
+  <path d="M1220 260 L1286 339" class="line" marker-end="url(#a)"/>
+  <path d="M1220 275 L1286 405" class="line" marker-end="url(#a)"/>
+  <path d="M1220 290 L1286 471" class="line" marker-end="url(#a)"/>
+
+  <!-- Anthropic -->
+  <rect x="1290" y="595" width="270" height="80" rx="12" fill="#212134"/>
+  <text x="1310" y="630" class="name light">Claude</text>
+  <text x="1310" y="657" class="lightnote">Anthropic API</text>
+  <path d="M1110 625 L1286 625" class="line" marker-end="url(#a)"/>
+
+  <!-- Data row -->
+  <text x="40" y="880" class="group">STORED IN STRAPI</text>
+  <rect x="40" y="895" width="480" height="75" rx="12" class="card"/>
+  <text x="60" y="927" class="name">Tracking records</text>
+  <text x="60" y="954" class="note">one per entry · where it was published</text>
+  <rect x="540" y="895" width="480" height="75" rx="12" class="card"/>
+  <text x="560" y="927" class="name">Core store</text>
+  <text x="560" y="954" class="note">settings · encrypted sign-in tokens</text>
+  <rect x="1040" y="895" width="520" height="75" rx="12" class="card"/>
+  <text x="1060" y="927" class="name">.env</text>
+  <text x="1060" y="954" class="note">API keys and app secrets · never in the database</text>
+</svg>

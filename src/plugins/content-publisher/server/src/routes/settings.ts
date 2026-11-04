@@ -5,15 +5,7 @@
 // admin is logged in" and would let any Author read the credential summary.
 
 import { READ, SETTINGS_READ, SETTINGS_UPDATE } from '../permissions';
-
-const can = (action: string) => ({
-  policies: [
-    'admin::isAuthenticatedAdmin',
-    { name: 'admin::hasPermissions', config: { actions: [action] } },
-  ],
-  // so a rejected mapping says which attribute was wrong, rather than 500 (item 18)
-  middlewares: ['plugin::content-publisher.plugin-errors'],
-});
+import { can } from './can';
 
 export default [
   {

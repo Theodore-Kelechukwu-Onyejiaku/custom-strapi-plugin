@@ -29,7 +29,7 @@ const PublishMenu = ({ post, platforms, busy, onPublish }: any) => {
       </Menu.Trigger>
       <Menu.Content zIndex={10}>
         {remaining.map((target: PlatformTarget) => (
-          <Menu.Item key={target.type} onSelect={() => onPublish([target])}>
+          <Menu.Item key={target.key} onSelect={() => onPublish([target])}>
             <Flex gap={2} alignItems="center">
               <target.Icon />
               <Typography>{target.label}</Typography>

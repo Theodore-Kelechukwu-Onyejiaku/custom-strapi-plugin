@@ -24,7 +24,6 @@ export type Platform = {
   label: string;
   fields: PlatformField[];
   envVars: string[];
-  fixedOptions?: Record<string, unknown>;
   // set when the editor signs in (LinkedIn, Facebook) rather than pasting a key
   oauth?: { scopes: string[] };
 };

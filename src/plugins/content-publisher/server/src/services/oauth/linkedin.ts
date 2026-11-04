@@ -11,7 +11,7 @@ import type { Provider } from './providers';
 
 const AUTHORIZE_URL = 'https://www.linkedin.com/oauth/v2/authorization';
 const TOKEN_URL = 'https://www.linkedin.com/oauth/v2/accessToken';
-const USERINFO_URL = 'https://api.linkedin.com/v2/userinfo';
+export const USERINFO_URL ='https://api.linkedin.com/v2/userinfo';
 
 export const linkedInProvider: Provider = {
   authorizeUrl({ secrets, redirectUri, state, scopes }) {

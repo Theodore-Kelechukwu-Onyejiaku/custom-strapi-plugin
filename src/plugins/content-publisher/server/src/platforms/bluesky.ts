@@ -42,10 +42,6 @@ const bluesky: Platform = {
       hint: 'Skipped if larger than 1MB, which is the lexicon’s cap for a card thumbnail.',
     },
   ],
-  fixedOptions: {
-    service: 'https://bsky.social',
-    langs: ['en'],
-  },
 };
 
 export default bluesky;

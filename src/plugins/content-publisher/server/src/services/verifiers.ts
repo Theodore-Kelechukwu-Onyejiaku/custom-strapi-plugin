@@ -7,6 +7,7 @@ import axios from 'axios';
 
 import { createSession } from './publishers/bluesky/session';
 import { GRAPH_URL } from './oauth/facebook';
+import { USERINFO_URL } from './oauth/linkedin';
 
 type Secrets = Record<string, string | undefined>;
 
@@ -37,7 +38,7 @@ export const VERIFIERS: Record<string, (secrets: Secrets) => Promise<string>> = 
   },
 
   async linkedIn(secrets) {
-    const { data } = await axios.get('https://api.linkedin.com/v2/userinfo', {
+    const { data } = await axios.get(USERINFO_URL, {
       headers: { Authorization: `Bearer ${secrets.ACCESS_TOKEN}` },
     });
     return `Connected as ${data?.name ?? 'unknown'}`;

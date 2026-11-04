@@ -7,7 +7,7 @@ import type { Core } from '@strapi/strapi';
 import { errors } from '@strapi/utils';
 
 import type { Platform, Settings } from '../platforms';
-import { resolveSecrets } from './credentials';
+import { missingEnvVars, resolveSecrets } from './credentials';
 import { connectionSecrets } from './oauth/connections';
 
 const { ApplicationError } = errors;
@@ -23,7 +23,7 @@ export const secretsFor = async (strapi: Core.Strapi, settings: Settings, platfo
 
   // keys live in .env only; missing entirely is worth saying plainly
   const secrets = resolveSecrets(platform);
-  const missing = platform.envVars.filter((name) => !secrets[name]);
+  const missing = missingEnvVars(platform, secrets);
   if (missing.length) {
     throw new ApplicationError(
       `${platform.label} is missing ${missing.join(', ')}. Add it to the .env file and restart Strapi.`

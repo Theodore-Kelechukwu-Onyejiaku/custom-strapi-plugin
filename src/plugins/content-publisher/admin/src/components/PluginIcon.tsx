@@ -1,5 +1,3 @@
-import React from 'react';
-
 // Document with an outgoing arrow, drawn in Figma on Strapi's 32x32 icon grid.
 // Figma: https://www.figma.com/design/LgZTuUDtKUCE9m1e4NfrOt?node-id=1-2
 //

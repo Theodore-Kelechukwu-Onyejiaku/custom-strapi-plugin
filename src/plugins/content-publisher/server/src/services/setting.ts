@@ -12,6 +12,7 @@ import { presentSettings, publishTargets } from './present-settings';
 import * as writes from './setting-writes';
 import { syncTrackingRecords } from './backfill';
 import { verifyPlatform } from './verify';
+import { platformStatus } from './platform-status';
 
 const { ValidationError } = errors;
 
@@ -46,6 +47,11 @@ const settingService = ({ strapi }: { strapi: Core.Strapi }) => ({
 
   async testPlatform(platformKey: string) {
     return verifyPlatform(strapi, platformKey);
+  },
+
+  // is each platform on, and are its keys / sign-in ready?
+  async platformStatus() {
+    return platformStatus(strapi);
   },
 
   requirePlatform(platformKey: string) {

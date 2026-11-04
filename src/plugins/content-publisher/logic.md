@@ -4,6 +4,322 @@ What has been added to this plugin and why. Newest first.
 
 ---
 
+## The chat follows the editor's role
+
+Before, the chat could use every read tool the shared `STRAPI_MCP_TOKEN` could, whoever was
+chatting. Only publishing was checked per editor. Now every tool is checked against the
+logged-in editor's role, so the chat can do no more than the Super Admin gave that role.
+
+| Tool | Kept only if the editor's role has |
+| --- | --- |
+| `list_<type>`, `get_<type>` | Content Manager **Read** on that content type |
+| `content_publisher_list_posts` | AI tools → List posts |
+| `content_publisher_list_platforms` | AI tools → List platforms |
+| `content_publisher_publish_post` | Publish posts to platforms **and** AI tools → Publish a post |
+| create, update, delete, publish/unpublish of content, users | never |
+
+| File | What it does |
+| --- | --- |
+| `server/src/services/chat/read-access.ts` | `chatAccess(strapi, userAbility)` works out what the role allows; `isAllowed(name, access)` decides per tool; `toolSlug(uid)` copies Strapi's MCP tool naming |
+| `server/src/controllers/chat.ts` | Calls `chatAccess` with `ctx.state.userAbility` and passes it on |
+| `server/src/services/chat/mcp-tools.ts` | Filters the token's tools with `isAllowed` |
+| `server/src/services/chat/agent.ts` | Takes `access`; tells the model when it cannot publish |
+| `server/src/services/chat/read-access.test.ts` | Checks the naming against Strapi's own `slugifyUidForMcpToolName`, and each rule above |
+
+- **Names:** Strapi names read tools from the uid (`api::blog.blog` → `list_blog`,
+  `plugin::users-permissions.user` → `list_plugin-users-permissions_user`). `toolSlug` does
+  the same; the test fails if Strapi changes its naming.
+- **Existing roles** do not have the AI tools permissions ticked, so their chat has no
+  plugin tools until a Super Admin ticks them. Super Admin has all of them.
+- **The token is still the upper limit.** The chat gets what both the token and the role
+  allow. Give the token every permission the chat might need; the role narrows it down.
+- **Not covered:** field-level rules. A role that can read a type but not one of its fields
+  still gets that field, because Strapi applies field rules with the token's rights.
+
+---
+
+## Choosing the Claude model in the chat
+
+A picker under the chat's message box lets the editor choose which Claude model answers.
+It starts on the default: `ANTHROPIC_MODEL` from `.env`, or `claude-haiku-4-5` when unset
+(the model the chat has always used). A change applies from the next message.
+
+| Piece | Job |
+| --- | --- |
+| `server/src/services/chat/models.ts` | The allowed list, `defaultModel()`, and `resolveModel(requested)` |
+| `GET /chat/models` (`read`) | Returns `{ models, defaultModel }` for the picker |
+| `POST /chat` | Reads `model` from the body; `resolveModel` keeps it only if it is on the list |
+| `admin/src/hooks/useChatModels.ts` | Loads the list; holds the editor's pick |
+| `admin/src/hooks/usePublisherChat.ts` | Sends the pick with each request (transport `body`) |
+| `admin/src/components/chat/ModelPicker.tsx` | The select; hidden if the list could not be loaded |
+
+- **Allowed list, not free text:** the browser sends only an id, and the server ignores
+  anything not on the list, so nobody can point the chat at an arbitrary or more expensive
+  model. A non-listed `ANTHROPIC_MODEL` is added to the list so the default stays selectable.
+- Models offered: Claude Haiku 4.5 (default), Haiku 5.5, Sonnet 5.5 and Opus 5.5. Claude
+  Fable 5.1 is left out on purpose: it costs more than Opus and its long turns do not suit
+  a quick chat. Add it to `CHAT_MODELS` if wanted.
+- Still the Vercel AI SDK (`@ai-sdk/anthropic`); only the model id passed to `anthropic()`
+  changed.
+
+## Separate Publish and Delete permissions (`server/src/permissions.ts`)
+
+"Access the publishing table" used to include publishing (public, permanent) and deleting.
+Least privilege splits them:
+
+| Action | uid | Checked by |
+| --- | --- | --- |
+| Access the publishing table | `read` | every post route, the chat route, menu link, `Page.Protect` |
+| Publish posts to platforms | `publish` | `POST /posts/:id/publish/:platform` as `can(READ, PUBLISH)`; the chat |
+| Delete posts from the publishing table | `delete` | `DELETE /posts/:id` as `can(READ, DELETE)` |
+| Access / Change the publishing settings | `settings-read` / `settings-update` | settings routes and page |
+
+- `can(...actions)` in `routes/can.ts` now takes several actions. Strapi's `hasPermissions`
+  requires **every** one (it uses `actions.every`).
+- **The chat:** it reaches the MCP tools with the server's `STRAPI_MCP_TOKEN`, not the
+  editor's rights. So `controllers/chat.ts` works out what the editor's own role allows
+  (`chatAccess` in `services/chat/read-access.ts`), and `isAllowed` drops every other tool
+  before the agent sees them. See "The chat follows the editor's role" below.
+- **Admin UI:** `hooks/usePostPermissions.ts` (`useRBAC`) gives `canPublish` / `canDelete`.
+  The table checks once and hides the publish menu and delete button per role; the edit-view
+  panel shows only "View on …" links without `canPublish`.
+- `ACTIONS` is built with a small `action(uid, displayName, subCategory?)` helper and the
+  ids with `id(uid)`, so adding an action is one line.
+- New actions are not granted to existing roles: Super Admin gets them, others need them
+  ticked.
+
+## Drafts can no longer be published to platforms
+
+Two holes, both closed on the server so the table, the edit view and MCP are all covered:
+
+- `publishPost()` (`services/publish-post.ts`) published any tracked post, draft or not.
+  It now refuses when `entryPublished` is false: "… is a draft. Publish it in Strapi first."
+- `resolveSource()` loaded the entry with a bare `findOne`, and the Document Service
+  returns the **draft** by default, so a published entry with unsaved edits sent those
+  edits to the platform. It now uses `publishedVersion()` from `services/tracking.ts`
+  (which already handled types with and without draft & publish), with the populate.
+
+## Edit-view panel (`admin/src/components/EntryPublishPanel.tsx`)
+
+Was `InjectedComponent.tsx`: one 176-line file that loaded data, published and rendered,
+with its own copy of the publish logic that swallowed errors (a failed publish showed
+nothing). Renamed for what it is, and split:
+
+| File | Job |
+| --- | --- |
+| `components/EntryPublishPanel.tsx` | Picks the state: hidden, loading, load failed, save first, publish first, or the menu |
+| `hooks/useEntryPost.ts` | Loads the entry's tracking post; refetches when the Content Manager status changes; `reload()` after a publish |
+| `hooks/usePublishRow.ts` | Publishing, **shared with the table**: same toasts on success and failure |
+| `components/entry/EntryPublishMenu.tsx` | The dropdown: "View on …" / "Publish to …" |
+| `components/entry/EntryPublishStatus.tsx` | The line under it: "Publishing to …" or "Published everywhere" |
+| `utils/trackedPost.ts` | `TrackedPost` type and `linkOf(post, target)` |
+
+- The panel follows the entry's status with Strapi's `unstable_useDocument`, so clicking
+  **Publish** in the Content Manager refreshes it without a reload.
+- A failed load now says so, instead of "Save this entry first".
+- Spacing uses the Design System's `paddingTop`, not an inline style.
+- Fixed: with every platform turned off it said "Published everywhere" (0 of 0).
+
+## One service per job, shared by every caller
+
+Controllers, MCP tools and the chat call the **same registered service methods**. No caller
+queries the database or publishes on its own, so a rule changed in a service applies
+everywhere at once.
+
+| Job | Service method | Called by |
+| --- | --- | --- |
+| List posts (search, paging) | `service('service').getPosts(query)` | table controller, MCP `list_posts` |
+| One post for the edit view | `service('service').getSinglePost(query)` | controller |
+| Delete a post | `service('service').deletePost(query)` | controller |
+| Publish to a platform | `service('service').publish(platformKey, postId)` | controller, MCP `publish_post` |
+| Platform on / ready? | `service('setting').platformStatus()` | MCP `list_platforms` |
+
+- **Publishing:** the five `publishPostTo*` methods, five controller methods and five
+  `/publish-to-*` routes became one `publish(platformKey, postId)` and one route,
+  `POST /posts/:id/publish/:platform`. The admin builds the URL with `publishPath()` in
+  `admin/src/components/platformTargets.ts`.
+- **The post is loaded on the server** (`services/publish-post.ts`) instead of taken from the
+  request body, so a caller cannot send its own `contentType` / `entryId`. The "already
+  published there" check moved there from the MCP tool, so it applies to the table too.
+- **MCP tools** call services through `pluginService()` in `mcp/shared.ts`, the same way
+  controllers do. `list_posts` passes its `search` and `limit` to `getPosts` as `_q` and
+  `pageSize`, the table's own params.
+
+### Post routes (`server/src/routes/posts.ts`)
+
+REST style: everything about posts sits under `/posts`, the HTTP method says what happens,
+and a post's id goes in the path. All are behind "Access the publishing table" (`read`).
+Admin routes are served at `/content-publisher/...`.
+
+| Method | Path | Handler | Service |
+| --- | --- | --- | --- |
+| GET | `/posts` | `controller.getPosts` | `getPosts(query)` |
+| GET | `/posts/by-entry?contentType=…&entryId=…` | `controller.getSinglePost` | `getSinglePost(query)` |
+| POST | `/posts/:id/publish/:platform` | `controller.publish` | `publish(platform, id)` |
+| DELETE | `/posts/:id` | `controller.deletePost` | `deletePost({ postId: id })` |
+
+These are admin routes, so they are not listed anywhere in the admin panel; the permission
+checkboxes that guard them are.
+
+### Public content API (`routes/content-api.ts`, `controllers/posts.ts`)
+
+Read-only, at `/api/content-publisher/...`, for a frontend that shows "Also on Dev.to"
+links. Users & Permissions decides who may call them; they show as **Posts → find /
+findByEntry** under Content-publisher and are granted to no one by default.
+
+| Method | Path | Handler | Service |
+| --- | --- | --- | --- |
+| GET | `/posts` | `posts.find` | `getPosts(query)` |
+| GET | `/posts/by-entry?contentType=…&entryId=…` | `posts.findByEntry` | `getSinglePost(query)` |
+
+- Same service methods as the admin routes and MCP tools. The controller only trims each
+  post with `toPublicPost()` (`services/public-post.ts`): title, contentType, entryId and
+  the five links. The MCP list tool uses the same function, plus `postId`.
+- Drafts are never returned: `getPosts` filters them out, and `findByEntry` answers 404
+  for a post whose entry is not published (`isPublic()`).
+- Responses follow Strapi's content-API shape: `{ data, meta: { pagination } }`.
+- Which routes are public or private, and why:
+
+| Route | Access |
+| --- | --- |
+| the two GETs above | Public role, or an API token to keep them private |
+| publish | API token only, if ever needed; not built |
+| delete, settings, platform status, connect, chat | admin only, never in the content API |
+
+- Fixed on the way: `getSinglePost` returned an arbitrary record when `contentType` or
+  `entryId` was missing (`$eq: undefined` matches anything). It now returns `null`.
+
+## Tool permissions (`server/src/permissions.ts`)
+
+Every MCP tool has its own admin action, so it shows up by name under
+Plugins → Content Publisher → **AI tools** in Settings → Roles and Settings → Admin Tokens.
+
+| Checkbox | Action | Tool |
+| --- | --- | --- |
+| List posts | `plugin::content-publisher.tool.list-posts` | `content_publisher_list_posts` |
+| List platforms | `plugin::content-publisher.tool.list-platforms` | `content_publisher_list_platforms` |
+| Publish a post | `plugin::content-publisher.tool.publish-post` | `content_publisher_publish_post` |
+
+- They are in `ACTIONS`, so `bootstrap.ts` registers them with the other three.
+- Each tool's `auth` uses `authFor(...)` from `mcp/shared.ts` with its own action.
+- Before this, all three tools sat behind "Access the publishing table" (`read`). Tokens and
+  roles that relied on that must now be given the new checkboxes.
+
+## Publishing assistant (floating chat)
+
+A chat button in the bottom-right corner of the plugin's pages. Editors ask things like
+"what hasn't gone to LinkedIn yet?" or "publish the newest post to Bluesky", and the
+assistant does it through the **same publish services** the table's menu calls.
+
+### How it fits together
+
+```
+ChatLauncher / ChatPanel (admin)          useChat from @ai-sdk/react
+  -> POST /content-publisher/chat          behind the `read` action, editor's admin JWT
+    -> services/chat/agent.ts             ToolLoopAgent (Vercel AI SDK) + Claude
+      -> services/chat/mcp-tools.ts       createMCPClient -> Strapi's own /mcp
+        -> mcp/*.ts                       the plugin's MCP tools
+          -> services/service.ts          the existing publish path
+```
+
+### The plugin's MCP tools (`server/src/mcp/`)
+
+Registered from `register()` — Strapi refuses new tools once its MCP server has started.
+Any MCP client (Claude Desktop, Cursor …) can use them too, not just the chat.
+
+| Tool | What it does |
+| --- | --- |
+| `content_publisher_list_posts` | Tracked entries and the URL each platform published them at |
+| `content_publisher_list_platforms` | Which platforms are on, and whether keys / sign-in are ready |
+| `content_publisher_publish_post` | Publishes one post to one platform via `service('service').publish` |
+
+All three are gated by `plugin::content-publisher.read`, so an admin token only sees them if
+it was granted "Access the publishing table".
+
+### What the chat may do
+
+- **Read:** the plugin's tools plus Strapi's read-only Content Manager tools (`list_*`,
+  `get_*`), minus user accounts.
+- **Write:** only `content_publisher_publish_post`, and only after the editor clicks
+  **Publish** on an approval card. The approval is signed with the admin JWT secret
+  (`experimental_toolApprovalSecret`) so a browser cannot fake one.
+- Create/update/delete tools are not given to the model at all.
+
+### Setup (.env only, like every other secret)
+
+```
+ANTHROPIC_API_KEY=...        # console.anthropic.com
+ANTHROPIC_MODEL=             # optional; default claude-haiku-4-5
+STRAPI_MCP_TOKEN=...         # an admin token for /mcp
+```
+
+The admin token (Settings → Administration Panel → Admin Tokens) needs the plugin's
+"Access the publishing table" permission, plus Content Manager *read* on the types it
+should see (Blog, Tag). Missing values make the chat answer with a message saying which
+one to add, instead of failing silently.
+
+Strapi's MCP server **hides** a tool from a token that lacks the tool's permission; it
+does not raise an error. So a token without "Access the publishing table" still connects
+and still sees `list_blog`, but never sees `content_publisher_*`. Without a check, the
+model then tells the editor it "can't publish" without saying why. `services/chat/mcp-tools.ts`
+checks for the plugin's tools after connecting and, if they're missing, the chat answers
+with which permission to tick on the token.
+
+### How the chat looks
+
+Modelled on ChatGPT and Claude. All colours come from the admin theme, so light and dark
+mode both work.
+
+| Piece | What it does | File |
+| --- | --- | --- |
+| Launcher | Round purple button, bottom right; sparkle icon, cross when open | `ChatLauncher.tsx`, `fabStyles.ts` |
+| Window | 400×620, rounded, soft shadow; fades and rises in. Stays mounted while closed, so the conversation is kept | `windowStyles.ts` |
+| Header | Assistant badge, name, platforms; **New chat** (stops any answer, clears messages and errors) and close | `ChatHeader.tsx` |
+| Editor's messages | Grey rounded bubble on the right, plain text | `ChatMessage.tsx` |
+| Assistant's replies | No bubble, full width, Markdown; a **Copy** button under each finished reply | `ChatMessage.tsx`, `CopyButton.tsx` |
+| Message box | Rounded field that grows with the text (`hooks/useAutoGrow.ts`); round send button that becomes **Stop** while the assistant answers; "Nothing is published until you approve it." underneath | `ChatInput.tsx`, `composerStyles.ts` |
+
+`ChatPanel.tsx` holds the useChat state, so it renders the header too (New chat needs
+`setMessages`, `stop` and `clearError`).
+
+### Starter questions
+
+An empty chat shows a greeting and a few ready-made questions as cards (`Suggestions.tsx`),
+like the starter prompts in ChatGPT or Claude. Clicking one sends it straight away, exactly as if it had been
+typed. They disappear once the conversation starts. To change them, edit `QUESTIONS` in
+that file. "Publish my newest post to Bluesky" is safe as a one-click starter because the
+publish still stops at the approval card.
+
+### What the editor sees while the assistant works
+
+Like ChatGPT, Claude and Gemini, the chat shows progress in words, not a spinner. All of it
+comes from the real useChat state; nothing is faked.
+
+| Moment | What shows | Where |
+| --- | --- | --- |
+| Waiting for the first reply, the model reasoning, or between steps | "Thinking…" with a shine sweeping across | `ChatPanel.tsx`, decided by `isThinking` in `activity.ts` |
+| A tool is running | "Looking up posts…" (shining) | `ToolCall.tsx` |
+| A tool finished | "✓ Looked up posts", or "✗ …" with the error, or "Cancelled" | `ToolCall.tsx` |
+| The answer is streaming | the text as it arrives, with a blinking `▍` after the last word | `ChatMarkdown.tsx` |
+
+- Tool names in words (running and done) live in `LABELS` in `activity.ts`. A tool not
+  listed there shows as "Using list_blog…" / "Used list_blog".
+- The shine and cursor are styled-components in `StatusText.tsx`; both stop animating when
+  the editor's system asks for reduced motion.
+- **Replies are rendered as Markdown** (`ChatMarkdown.tsx`) with `react-markdown` and
+  `remark-gfm` (tables, strikethrough, bare URLs as links). The editor's own messages stay
+  plain text. Raw HTML in a reply is ignored, not rendered, so text the model read from a
+  blog post can't inject anything into the admin. Links use the design system's `Link` and
+  open in a new tab. The styles (`markdownStyles.ts`) use the admin theme's colours, so
+  replies follow light and dark mode. The cursor is a CSS `::after` on the last paragraph
+  or list item, so it stays on the last line even inside formatting.
+- While a reply streams in, half-finished Markdown (e.g. `**bold` before its closing `**`)
+  can show its symbols for a moment until the rest arrives.
+- **The model's reasoning is never shown.** If the model sends reasoning parts,
+  `ChatMessage.tsx` skips them; the editor only sees "Thinking…" while it reasons.
+
+---
+
 ## Dead code removed
 
 Files nothing imported any more, left over from the old one-button-per-platform table and the
@@ -145,7 +461,11 @@ differently — a Blog's `body` and an Article's `section` both feed dev.to's
    (what the API expects), `label`, `required`, and `accepts` (the Strapi attribute types
    it can be mapped from).
 2. Add it to `PLATFORMS` in `server/src/platforms/index.ts`.
-3. Add a publish function in `server/src/services/service.ts`.
+3. Add a `<name>Link` attribute to `content-types/post.ts`, map the platform key to it in
+   `LINK_FIELDS` (`services/publish-config.ts`), write the request in
+   `services/publishers/<name>.ts`, and add it to `senders` in `services/publish-post.ts`.
+   No new route, controller method or MCP change: `/posts/:id/publish/:platform` and the MCP tool
+   take any platform key.
 4. Optionally add an icon and blurb to `PLATFORM_META` in
    `admin/src/components/settings/platformMeta.ts`, and a target in
    `admin/src/components/platformTargets.ts` so it shows in the publish menu.
@@ -155,8 +475,9 @@ whatever the server serves, and filters each one by that field's `accepts`.
 
 ### Routes
 
-All three are authenticated with `admin::isAuthenticatedAdmin`, unlike the six post routes,
-which are still `auth: false` (see PROGRESS.md item 10).
+All three are authenticated with `admin::isAuthenticatedAdmin`, like the post routes.
+Every route behind an RBAC action builds its config with `can(action)` from
+`routes/can.ts`.
 
 | Method | Path | Handler |
 | --- | --- | --- |
@@ -171,8 +492,9 @@ only fails later, at publish time, with an error that points nowhere near the ca
 ### How publishing reads the mapping
 
 ```
-controller.publishPostToDevTo
-  -> services/service.ts          (wiring only)
+controller.publish  /  MCP content_publisher_publish_post
+  -> service('service').publish(platformKey, postId)
+    -> services/publish-post.ts   (loads the post, refuses if already published)
     -> services/publish.ts        (loads the mapping, resolves, records the URL)
       -> services/resolve-fields.ts   (entry + mapping -> platform field values)
       -> services/publishers/devto.ts (values -> the dev.to request)
@@ -390,3 +712,41 @@ have to be stored.
 `content-types/post.ts` declares a `oneToOne` relation to it. Field *names* are now free,
 but the content *type* is not. Making it generic needs a schema change and a migration —
 see PROGRESS.md item 16.
+
+### Cleanup (removed as unused or duplicated)
+
+- `GET /search` and its controller/service code (`getSearchQuery`, `POSTS_PER_PAGE`): the
+  table searches through `GET /posts?_q=`, so nothing called it.
+- `fixedOptions` on the platform definitions: never read; each publisher sets those values
+  in its own request.
+- The platform → link field map now lives once, as `LINK_FIELDS` in
+  `services/publish-config.ts`. `publishEntry` looks the field up from the platform key,
+  and the MCP tools and `list-query.ts` reuse it.
+- `missingEnvVars` in `services/credentials.ts` replaces the same filter written in
+  `publish-secrets.ts` and `oauth/flow.ts`.
+- The no-op `destroy.ts`, the empty `policies/`, the admin plugin's unused own
+  `injectionZones`, `getTarget`, and the `type` field on `PlatformTarget` (it duplicated `key`).
+
+## Strapi Marketplace readiness (2.0.0)
+
+Changes made against the [Marketplace guidelines](https://community.strapi.io/help/market-guidelines):
+
+- **Version 2.0.0.** The permission and route changes in CHANGELOG.md are breaking, so this
+  is a major version, not 1.x.
+- **Description** (`description` and `strapi.description`, 119 characters) names all five
+  platforms. The guideline asks for 50–150 characters.
+- **`logo.png`**, 160×160, exported from `logo.svg` with
+  `rsvg-convert -w 160 -h 160 logo.svg -o logo.png`. The Marketplace takes PNG or JPG only.
+  It's listed in `files`, so it ships in the npm package.
+- **Dependencies:** `npm audit --omit=dev` reports 0 vulnerabilities. `zod` is a direct
+  dependency (`^4.6.7`): the AI SDK packages only list it as a peer, and npm had resolved it
+  to 4.4.3, which is vulnerable. The issues left in `npm audit` all come from dev tooling
+  (`@strapi/strapi`, `@strapi/sdk-plugin`, `vitest`), none of which ship to users.
+- **Tests:** `server/src/services/chat/models.test.ts` covers the chat's model allowlist.
+  `server/tsconfig.build.json` already excludes `*.test.ts`, so tests never reach `dist`.
+- **README:** a prerequisites section, a "Reporting issues" section, the chat marked as
+  optional (the free-to-use rule), and a note that `STRAPI_MCP_TOKEN` is only sent to the
+  project's own `/mcp`.
+- **`TOOLS` has an explicit type** (`McpTool[]` in `mcp/index.ts`). After the zod update,
+  Strapi keeps its own nested copy of zod, and the build failed with TS2742 because the
+  inferred type of `TOOLS` pointed into it.

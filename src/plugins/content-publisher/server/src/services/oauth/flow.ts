@@ -8,7 +8,7 @@ import { errors } from '@strapi/utils';
 
 import type { Platform } from '../../platforms';
 import type { Provider } from './providers';
-import { resolveSecrets } from '../credentials';
+import { missingEnvVars, resolveSecrets } from '../credentials';
 import { createState, consumeState } from './state';
 import { saveConnection } from './connections';
 
@@ -21,7 +21,7 @@ export const redirectUriFor = (strapi: Core.Strapi, platformKey: string) =>
 export const startSignIn = async (strapi: Core.Strapi, platform: Platform, provider: Provider) => {
   const secrets = resolveSecrets(platform);
 
-  const missing = platform.envVars.filter((name) => !secrets[name]);
+  const missing = missingEnvVars(platform, secrets);
   if (missing.length) {
     throw new ValidationError(
       `Add ${missing.join(' and ')} to the .env file and restart Strapi before connecting.`

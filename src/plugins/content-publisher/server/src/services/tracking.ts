@@ -13,7 +13,7 @@ import { getSettings } from './settings-store';
 // these — see titleOf below — this is only the fallback when nothing is mapped.
 const TITLE_KEYS = ['title', 'name', 'heading', 'label'];
 
-export const titleOf = (entry: any, mappedTitle?: string | null) => {
+const titleOf =(entry: any, mappedTitle?: string | null) => {
   if (mappedTitle && entry?.[mappedTitle]) return String(entry[mappedTitle]);
 
   const key = TITLE_KEYS.find((one) => entry?.[one]);
@@ -39,15 +39,15 @@ const mappedTitleFor = async (strapi: Core.Strapi, uid: string) => {
  * keeps two rows per document and the draft one always has `publishedAt: null`. Editing a
  * published entry fires on the draft, so trusting that row would mark it unpublished. A type
  * without draft & publish has no unpublished state, so its only entry always counts.
+ * `populate` is for publishing, which needs the entry's relations and media.
  */
-export const publishedVersion = async (strapi: Core.Strapi, uid: string, documentId: string) => {
+export const publishedVersion = async (
+  strapi: Core.Strapi, uid: string, documentId: string, populate?: unknown
+) => {
   const contentType: any = (strapi.contentTypes as any)[uid];
+  const status = contentType?.options?.draftAndPublish ? { status: 'published' as const } : {};
 
-  if (!contentType?.options?.draftAndPublish) {
-    return strapi.documents(uid as any).findOne({ documentId });
-  }
-
-  return strapi.documents(uid as any).findOne({ documentId, status: 'published' });
+  return strapi.documents(uid as any).findOne({ documentId, ...status, populate: populate as any });
 };
 
 export const snapshotOf = async (

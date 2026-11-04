@@ -34,11 +34,6 @@ const devTo: Platform = {
     },
     { key: 'description', label: 'Description', required: false, accepts: ['string', 'text'] },
   ],
-  fixedOptions: {
-    published: true,
-    series: null,
-    organization_id: null,
-  },
 };
 
 export default devTo;

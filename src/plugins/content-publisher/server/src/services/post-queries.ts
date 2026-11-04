@@ -6,14 +6,8 @@
 
 import type { Core } from '@strapi/strapi';
 
-import { POST_UID, POSTS_PER_PAGE } from './publish-config';
+import { POST_UID } from './publish-config';
 import { buildListQuery } from './list-query';
-
-// `start` arrives from the query string, so it is a string or missing.
-const toStart = (value: unknown): number => {
-  const parsed = Number.parseInt(String(value), 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
-};
 
 // Sorting, filtering, search and paging all arrive as the standard admin query params, so
 // the table gets them from Strapi's own components rather than anything hand-rolled.
@@ -31,31 +25,16 @@ export const getPosts = async (strapi: Core.Strapi, query: any) => {
 
 // Looked up by the entry it tracks, so the content-manager panel works for any configured
 // collection type rather than only blogs.
-export const getSinglePost = (strapi: Core.Strapi, query: any) =>
-  strapi.documents(POST_UID).findFirst({
+export const getSinglePost = async (strapi: Core.Strapi, query: any) => {
+  // without both, `$eq: undefined` would match any record and return a random post
+  if (!query?.contentType || !query?.entryId) return null;
+
+  return strapi.documents(POST_UID).findFirst({
     filters: {
-      contentType: { $eq: query?.contentType },
-      entryId: { $eq: query?.entryId },
+      contentType: { $eq: String(query.contentType) },
+      entryId: { $eq: String(query.entryId) },
     },
   });
-
-export const getSearchQuery = async (
-  strapi: Core.Strapi,
-  query: { search: string; start: number }
-) => {
-  // the snapshot means this is a plain column match, not a join through a relation
-  const filters = { title: { $contains: query?.search } };
-
-  const totalPosts = await strapi.documents(POST_UID).count({ filters });
-
-  const posts = await strapi.documents(POST_UID).findMany({
-    filters,
-    start: toStart(query?.start),
-    limit: POSTS_PER_PAGE,
-    sort: 'entryUpdatedAt:desc',
-  });
-
-  return { posts, totalPosts };
 };
 
 export const deletePost = async (strapi: Core.Strapi, query: { postId: string }) => {

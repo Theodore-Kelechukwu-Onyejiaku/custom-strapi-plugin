@@ -5,6 +5,6 @@ export default ({ env }) => ({
     keys: env.array("APP_KEYS"),
   },
   mcp: {
-    enabled: true,
+    enabled: env.bool("MCP_ENABLED", true),
   },
 });

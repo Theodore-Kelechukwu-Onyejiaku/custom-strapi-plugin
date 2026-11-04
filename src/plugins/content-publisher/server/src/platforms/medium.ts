@@ -42,10 +42,6 @@ const medium: Platform = {
       hint: 'Pick the relation, then which of its fields holds the tag text.',
     },
   ],
-  fixedOptions: {
-    contentFormat: 'markdown',
-    publishStatus: 'public',
-  },
 };
 
 export default medium;

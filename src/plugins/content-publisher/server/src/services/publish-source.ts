@@ -9,6 +9,7 @@ import { errors } from '@strapi/utils';
 
 import type { Platform, Settings } from '../platforms';
 import { BLOG_UID, ENTRY_POPULATE, LEGACY_MAPS } from './publish-config';
+import { publishedVersion } from './tracking';
 
 const { ApplicationError } = errors;
 
@@ -26,13 +27,12 @@ export const resolveSource = async (
     throw new ApplicationError('This record is not linked to an entry.');
   }
 
-  const entry = await strapi.documents(uid).findOne({
-    documentId: entryId,
-    populate: ENTRY_POPULATE,
-  });
+  // The live (published) version, never the draft: the Document Service returns the draft by
+  // default, which would send unpublished edits to the platform.
+  const entry = await publishedVersion(strapi, uid, entryId, ENTRY_POPULATE);
 
   if (!entry) {
-    throw new ApplicationError('The entry this record points at no longer exists.');
+    throw new ApplicationError('This entry is not published. Publish it in Strapi first.');
   }
 
   // Blogs fall back to the pre-settings field names so an upgrade keeps working untouched.

@@ -8,6 +8,8 @@
 
 const pluginPermissions = {
   read: [{ action: 'plugin::content-publisher.read', subject: null }],
+  publish: [{ action: 'plugin::content-publisher.publish', subject: null }],
+  delete: [{ action: 'plugin::content-publisher.delete', subject: null }],
   settingsRead: [{ action: 'plugin::content-publisher.settings-read', subject: null }],
   settingsUpdate: [{ action: 'plugin::content-publisher.settings-update', subject: null }],
 };

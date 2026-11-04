@@ -37,10 +37,6 @@ const linkedIn: Platform = {
       accepts: ['string', 'text', 'richtext'],
     },
   ],
-  fixedOptions: {
-    visibility: 'PUBLIC',
-    feedDistribution: 'MAIN_FEED',
-  },
 };
 
 export default linkedIn;
